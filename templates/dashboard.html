@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Data Cloud — Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --green-dark:   #166534;
+      --green-main:   #16a34a;
+      --green-light:  #bbf7d0;
+      --green-bg:     #f0fdf4;
+      --green-border: #86efac;
+      --blue-main:    #2563eb;
+      --blue-light:   #dbeafe;
+      --amber-main:   #d97706;
+      --amber-light:  #fef3c7;
+      --red-main:     #dc2626;
+      --red-light:    #fee2e2;
+      --purple-main:  #7c3aed;
+      --purple-light: #ede9fe;
+      --cyan-main:    #0891b2;
+      --cyan-light:   #cffafe;
+    }
+    * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
+    body {
+      background: #f8fafc;
+      min-height: 100vh;
+      color: #0f172a;
+    }
+
+    /* ── Top Nav ── */
+    .top-nav {
+      background: linear-gradient(135deg, var(--green-dark) 0%, #14532d 100%);
+      padding: .9rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 12px rgba(22,101,52,.25);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      color: #fff;
+      text-decoration: none;
+    }
+    .nav-brand-icon {
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-brand-icon svg { width: 20px; height: 20px; color: #fff; }
+    .nav-brand-title { font-weight: 700; font-size: 1rem; }
+    .nav-brand-sub   { font-size: .7rem; color: rgba(255,255,255,.55); font-weight: 400; }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+    .nav-pill {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 20px;
+      padding: .35rem .85rem;
+      font-size: .76rem;
+      color: rgba(255,255,255,.85);
+      font-weight: 500;
+      text-decoration: none;
+      transition: background .2s;
+    }
+    .nav-pill:hover { background: rgba(255,255,255,.2); color: #fff; }
+    .nav-pill svg   { width: 13px; height: 13px; }
+    .nav-link-plain {
+      font-size: .78rem;
+      color: rgba(255,255,255,.55);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color .2s;
+    }
+    .nav-link-plain:hover { color: #fff; }
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      font-size: .72rem;
+      color: rgba(255,255,255,.6);
+    }
+    .live-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #4ade80;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: .5; transform: scale(.7); }
+    }
+
+    /* ── Page wrapper ── */
+    .page-wrap {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 1.75rem 2rem 3rem;
+    }
+
+    /* ── Page header ── */
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 1.75rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .page-title  { font-size: 1.45rem; font-weight: 800; color: #0f172a; margin: 0 0 .2rem; }
+    .page-sub    { font-size: .82rem; color: #64748b; margin: 0; }
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      flex-wrap: wrap;
+    }
+    .last-refresh {
+      font-size: .76rem;
+      color: #94a3b8;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: .3rem .85rem;
+    }
+    .btn-refresh {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      background: var(--green-main);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: .45rem 1rem;
+      font-size: .8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+    }
+    .btn-refresh:hover  { background: var(--green-dark); }
+    .btn-refresh:active { transform: scale(.97); }
+    .btn-refresh svg    { width: 14px; height: 14px; }
+    .btn-refresh.spinning svg { animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Section title ── */
+    .section-title {
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: #94a3b8;
+      margin: 0 0 .9rem;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e2e8f0;
+    }
+
+    /* ── Hero KPI row ── */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+    @media (max-width: 1100px) { .hero-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width:  640px) { .hero-grid { grid-template-columns: 1fr; } }
+
+    .hero-card {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      padding: 1.4rem 1.5rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,.05);
+      transition: box-shadow .2s, transform .2s;
+    }
+    .hero-card:hover {
+      box-shadow: 0 8px 24px rgba(0,0,0,.09);
+      transform: translateY(-2px);
+    }
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 16px 16px 0 0;
+    }
+    .hero-card.green::before  { background: linear-gradient(90deg, var(--green-main), #4ade80); }
+    .hero-card.blue::before   { background: linear-gradient(90deg, var(--blue-main), #60a5fa); }
+    .hero-card.amber::before  { background: linear-gradient(90deg, var(--amber-main), #fbbf24); }
+    .hero-card.purple::before { background: linear-gradient(90deg, var(--purple-main), #a78bfa); }
+
+    .hero-label {
+      font-size: .73rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: #94a3b8;
+      margin-bottom: .6rem;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+    .hero-label svg { width: 13px; height: 13px; }
+    .hero-value {
+      font-size: 2.4rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: .35rem;
+      letter-spacing: -.02em;
+    }
+    .hero-card.green  .hero-value { color: var(--green-dark); }
+    .hero-card.blue   .hero-value { color: #1d4ed8; }
+    .hero-card.amber  .hero-value { color: #92400e; }
+    .hero-card.purple .hero-value { color: #5b21b6; }
+    .hero-sub {
+      font-size: .78rem;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .25rem;
+      font-size: .7rem;
+      font-weight: 600;
+      border-radius: 12px;
+      padding: .18rem .55rem;
+    }
+    .badge-up   { background: #dcfce7; color: #166534; }
+    .badge-down { background: #fee2e2; color: #991b1b; }
+    .badge-neu  { background: #f1f5f9; color: #475569; }
+    .hero-icon {
+      position: absolute;
+      bottom: 1rem; right: 1.25rem;
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      opacity: .08;
+    }
+    .hero-card.green  .hero-icon { background: var(--green-main); }
+    .hero-card.blue   .hero-icon { background: var(--blue-main); }
+    .hero-card.amber  .hero-icon { background: var(--amber-main); }
+    .hero-card.purple .hero-icon { background: var(--purple-main); }
+    .hero-icon svg { width: 30px; height: 30px; color: #000; }
+
+    /* ── Secondary KPI grid ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+    @media (max-width: 1100px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width:  640px) { .kpi-grid { grid-template-columns: 1fr; } }
+
+    .kpi-card {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      padding: 1.1rem 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+      transition: box-shadow .2s, transform .2s;
+    }
+    .kpi-card:hover {
+      box-shadow: 0 6px 18px rgba(0,0,0,.08);
+      transform: translateY(-1px);
+    }
+    .kpi-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: .65rem;
+    }
+    .kpi-icon-wrap {
+      width: 36px; height: 36px;
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .kpi-icon-wrap svg { width: 18px; height: 18px; }
+    .kpi-icon-wrap.green  { background: var(--green-bg);  color: var(--green-dark); }
+    .kpi-icon-wrap.blue   { background: var(--blue-light); color: var(--blue-main); }
+    .kpi-icon-wrap.amber  { background: var(--amber-light); color: var(--amber-main); }
+    .kpi-icon-wrap.red    { background: var(--red-light);  color: var(--red-main); }
+    .kpi-icon-wrap.purple { background: var(--purple-light); color: var(--purple-main); }
+    .kpi-icon-wrap.cyan   { background: var(--cyan-light); color: var(--cyan-main); }
+    .kpi-label { font-size: .72rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .2rem; }
+    .kpi-val   { font-size: 1.6rem; font-weight: 800; color: #0f172a; line-height: 1.1; letter-spacing: -.02em; }
+    .kpi-sub   { font-size: .74rem; color: #94a3b8; margin-top: .3rem; }
+
+    /* ── Progress bar ── */
+    .prog-wrap   { margin-top: .6rem; }
+    .prog-header { display: flex; justify-content: space-between; font-size: .72rem; color: #64748b; margin-bottom: .3rem; }
+    .prog-track  { height: 6px; background: #f1f5f9; border-radius: 99px; overflow: hidden; }
+    .prog-fill   { height: 100%; border-radius: 99px; transition: width 1s ease; }
+    .fill-green  { background: linear-gradient(90deg, var(--green-main), #4ade80); }
+    .fill-blue   { background: linear-gradient(90deg, var(--blue-main), #60a5fa); }
+    .fill-amber  { background: linear-gradient(90deg, var(--amber-main), #fbbf24); }
+    .fill-red    { background: linear-gradient(90deg, var(--red-main), #f87171); }
+    .fill-purple { background: linear-gradient(90deg, var(--purple-main), #a78bfa); }
+    .fill-cyan   { background: linear-gradient(90deg, var(--cyan-main), #22d3ee); }
+
+    /* ── Bottom grid (wide panels) ── */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+    @media (max-width: 900px) { .bottom-grid { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+      overflow: hidden;
+    }
+    .panel-head {
+      padding: 1rem 1.25rem .75rem;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .panel-title { font-size: .85rem; font-weight: 700; color: #0f172a; }
+    .panel-body  { padding: 1rem 1.25rem; }
+
+    /* Object type breakdown */
+    .obj-row {
+      display: flex;
+      align-items: center;
+      gap: .85rem;
+      padding: .5rem 0;
+      border-bottom: 1px solid #f8fafc;
+    }
+    .obj-row:last-child { border-bottom: none; }
+    .obj-dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
+    .obj-name { font-size: .82rem; font-weight: 600; color: #334155; flex: 1; }
+    .obj-count { font-size: .82rem; font-weight: 700; color: #0f172a; }
+    .obj-pct   { font-size: .72rem; color: #94a3b8; min-width: 38px; text-align: right; }
+    .obj-bar   { flex: 2; height: 5px; background: #f1f5f9; border-radius: 99px; overflow: hidden; }
+    .obj-bar-fill { height: 100%; border-radius: 99px; }
+
+    /* Status table */
+    .status-table { width: 100%; border-collapse: collapse; }
+    .status-table th {
+      font-size: .68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: #94a3b8;
+      padding: .35rem .5rem;
+      text-align: left;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .status-table td {
+      font-size: .8rem;
+      color: #334155;
+      padding: .55rem .5rem;
+      border-bottom: 1px solid #f8fafc;
+      vertical-align: middle;
+    }
+    .status-table tr:last-child td { border-bottom: none; }
+    .status-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      font-size: .75rem;
+      font-weight: 600;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot.active  { background: #22c55e; }
+    .dot.warning { background: #f59e0b; }
+    .dot.error   { background: #ef4444; }
+    .dot.idle    { background: #94a3b8; }
+
+    /* ── Health row ── */
+    .health-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+    @media (max-width: 900px) { .health-grid { grid-template-columns: 1fr; } }
+
+    .health-card {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      padding: 1.1rem 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .health-ring {
+      position: relative;
+      width: 58px; height: 58px; flex-shrink: 0;
+    }
+    .health-ring svg {
+      width: 58px; height: 58px;
+      transform: rotate(-90deg);
+    }
+    .ring-track { fill: none; stroke: #f1f5f9; stroke-width: 5; }
+    .ring-fill  { fill: none; stroke-width: 5; stroke-linecap: round; transition: stroke-dasharray 1s ease; }
+    .ring-val {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; font-weight: 800; color: #0f172a;
+    }
+    /*.health-info {}-*/
+    .health-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: #94a3b8; margin-bottom: .25rem; }
+    .health-val   { font-size: 1.3rem; font-weight: 800; color: #0f172a; line-height: 1.1; }
+    .health-sub   { font-size: .72rem; color: #94a3b8; margin-top: .15rem; }
+
+    /* ── Tooltip ── */
+    [data-tip] { cursor: default; }
+
+    /* ── Chart panels ── */
+    .charts-row {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+    .charts-row-2 { grid-template-columns: 1fr 1fr; }
+    .charts-row-3 { grid-template-columns: 1.6fr 1fr 1fr; }
+    @media (max-width: 1050px) {
+      .charts-row-2 { grid-template-columns: 1fr; }
+      .charts-row-3 { grid-template-columns: 1fr; }
+    }
+    .chart-panel {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+      overflow: hidden;
+    }
+    .chart-head {
+      padding: .95rem 1.25rem .7rem;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: .5rem;
+    }
+    .chart-title { font-size: .85rem; font-weight: 700; color: #0f172a; }
+    .chart-sub   { font-size: .72rem; color: #94a3b8; }
+    .chart-legend {
+      display: flex;
+      align-items: center;
+      gap: .85rem;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: .3rem;
+      font-size: .7rem;
+      font-weight: 500;
+      color: #64748b;
+    }
+    .legend-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .chart-body  { padding: 1.1rem 1.25rem 1rem; }
+    .chart-body canvas { display: block; }
+
+    /* ── Footer ── */
+    .dash-footer {
+      text-align: center;
+      font-size: .72rem;
+      color: #cbd5e1;
+      padding-top: .5rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Top nav ── -->
+<nav class="top-nav">
+  <a href="/aws-config" class="nav-brand">
+    <div class="nav-brand-icon">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+      </svg>
+    </div>
+    <div>
+      <div class="nav-brand-title">Salesforce Data Cloud</div>
+      <div class="nav-brand-sub">Admin Dashboard</div>
+    </div>
+  </a>
+  <div class="nav-right">
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      Live
+    </div>
+    <a href="/aws-config" class="nav-pill">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg>
+      Configure
+    </a>
+    <a href="/logout" class="nav-link-plain">Sign out &rarr;</a>
+  </div>
+</nav>
+
+<!-- ── Page ── -->
+<div class="page-wrap">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Data Cloud Overview</h1>
+      <p class="page-sub">Salesforce Data Cloud &mdash; Organisation: mimit.my.salesforce.com</p>
+    </div>
+    <div class="header-meta">
+      <span class="last-refresh" id="last-refresh-label">Last refreshed: just now</span>
+      <button class="btn-refresh" id="refresh-btn" onclick="simulateRefresh()">
+        <svg id="refresh-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Hero KPIs ── -->
+  <div class="section-title">Core Metrics</div>
+  <div class="hero-grid">
+
+    <!-- Total Data Streams -->
+    <div class="hero-card green">
+      <div class="hero-label">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+        Total Data Streams
+      </div>
+      <div class="hero-value" id="stat-total-streams">—</div>
+      <div class="hero-sub">
+        <span class="hero-badge badge-up">&#9650; 3 this week</span>
+        &nbsp;of 50 provisioned
+      </div>
+      <div class="hero-icon">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Active Data Streams -->
+    <div class="hero-card blue">
+      <div class="hero-label">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        Active Data Streams
+      </div>
+      <div class="hero-value">38</div>
+      <div class="hero-sub">
+        <span class="hero-badge badge-up">80.9% active rate</span>
+        &nbsp;9 inactive
+      </div>
+      <div class="hero-icon">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Data Lake Objects -->
+    <div class="hero-card amber">
+      <div class="hero-label">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/>
+        </svg>
+        Data Lake Objects
+      </div>
+      <div class="hero-value">124</div>
+      <div class="hero-sub">
+        <span class="hero-badge badge-up">&#9650; 7 new</span>
+        &nbsp;DLOs registered
+      </div>
+      <div class="hero-icon">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Data Model Objects -->
+    <div class="hero-card purple">
+      <div class="hero-label">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
+        </svg>
+        Data Model Objects
+      </div>
+      <div class="hero-value">86</div>
+      <div class="hero-sub">
+        <span class="hero-badge badge-neu">stable</span>
+        &nbsp;semantic models
+      </div>
+      <div class="hero-icon">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Secondary KPIs ── -->
+  <div class="section-title">Ingestion &amp; Processing</div>
+  <div class="kpi-grid">
+
+    <!-- Calculated Insights -->
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div>
+          <div class="kpi-label">Calculated Insights</div>
+          <div class="kpi-val">23</div>
+        </div>
+        <div class="kpi-icon-wrap cyan">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="kpi-sub">19 active &bull; 4 scheduled</div>
+      <div class="prog-wrap">
+        <div class="prog-header"><span>Active</span><span>82.6%</span></div>
+        <div class="prog-track"><div class="prog-fill fill-cyan" style="width:82.6%"></div></div>
+      </div>
+    </div>
+
+    <!-- Ingestion Rate -->
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div>
+          <div class="kpi-label">Ingestion Rate</div>
+          <div class="kpi-val">142K</div>
+        </div>
+        <div class="kpi-icon-wrap green">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+          </svg>
+        </div>
+      </div>
+      <div class="kpi-sub">records / hour &bull; peak 210K</div>
+      <div class="prog-wrap">
+        <div class="prog-header"><span>Capacity</span><span>67.6%</span></div>
+        <div class="prog-track"><div class="prog-fill fill-green" style="width:67.6%"></div></div>
+      </div>
+    </div>
+
+    <!-- API Success Rate -->
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div>
+          <div class="kpi-label">API Success Rate</div>
+          <div class="kpi-val">99.2%</div>
+        </div>
+        <div class="kpi-icon-wrap green">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="kpi-sub">last 24 h &bull; 14 failures</div>
+      <div class="prog-wrap">
+        <div class="prog-header"><span>SLA target 99.0%</span><span>&#10003; passing</span></div>
+        <div class="prog-track"><div class="prog-fill fill-green" style="width:99.2%"></div></div>
+      </div>
+    </div>
+
+    <!-- Data Volume Today -->
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div>
+          <div class="kpi-label">Volume Today</div>
+          <div class="kpi-val">18.2M</div>
+        </div>
+        <div class="kpi-icon-wrap blue">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+          </svg>
+        </div>
+      </div>
+      <div class="kpi-sub">records ingested &bull; +12% vs yesterday</div>
+      <div class="prog-wrap">
+        <div class="prog-header"><span>Daily budget</span><span>73%</span></div>
+        <div class="prog-track"><div class="prog-fill fill-blue" style="width:73%"></div></div>
+      </div>
+    </div>
+
+    <!-- Unified Profiles -->
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div>
+          <div class="kpi-label">Unified Profiles</div>
+          <div class="kpi-val">2.41M</div>
+        </div>
+        <div class="kpi-icon-wrap purple">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="kpi-sub">identity resolved &bull; 94.1% match rate</div>
+      <div class="prog-wrap">
+        <div class="prog-header"><span>Identity resolution</span><span>94.1%</span></div>
+        <div class="prog-track"><div class="prog-fill fill-purple" style="width:94.1%"></div></div>
+      </div>
+    </div>
+
+    <!-- Schema Coverage -->
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div>
+          <div class="kpi-label">Schema Coverage</div>
+          <div class="kpi-val">87.3%</div>
+        </div>
+        <div class="kpi-icon-wrap amber">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="kpi-sub">183 / 210 objects mapped</div>
+      <div class="prog-wrap">
+        <div class="prog-header"><span>Target 95%</span><span>27 unmapped</span></div>
+        <div class="prog-track"><div class="prog-fill fill-amber" style="width:87.3%"></div></div>
+      </div>
+    </div>
+
+    <!-- Data Quality Score -->
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div>
+          <div class="kpi-label">Data Quality Score</div>
+          <div class="kpi-val">94.6%</div>
+        </div>
+        <div class="kpi-icon-wrap green">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="kpi-sub">completeness &bull; 3.2% anomalies</div>
+      <div class="prog-wrap">
+        <div class="prog-header"><span>Quality index</span><span>&#9650; +0.8%</span></div>
+        <div class="prog-track"><div class="prog-fill fill-green" style="width:94.6%"></div></div>
+      </div>
+    </div>
+
+    <!-- Failed Streams -->
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div>
+          <div class="kpi-label">Failed Streams (24h)</div>
+          <div class="kpi-val">3</div>
+        </div>
+        <div class="kpi-icon-wrap red">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="kpi-sub">2 auth errors &bull; 1 timeout</div>
+      <div class="prog-wrap">
+        <div class="prog-header"><span>Error rate</span><span>6.4%</span></div>
+        <div class="prog-track"><div class="prog-fill fill-red" style="width:6.4%"></div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Health ring row ── -->
+  <div class="section-title">Platform Health</div>
+  <div class="health-grid" style="margin-bottom:1.75rem;">
+
+    <div class="health-card">
+      <div class="health-ring">
+        <svg viewBox="0 0 58 58">
+          <circle class="ring-track" cx="29" cy="29" r="22"/>
+          <circle class="ring-fill" cx="29" cy="29" r="22"
+            stroke="#16a34a"
+            stroke-dasharray="123 138"
+            stroke-dashoffset="0"/>
+        </svg>
+        <div class="ring-val">89%</div>
+      </div>
+      <div class="health-info">
+        <div class="health-label">Storage Used</div>
+        <div class="health-val">3.7 TB</div>
+        <div class="health-sub">of 4.2 TB total &bull; 0.5 TB free</div>
+      </div>
+    </div>
+
+    <div class="health-card">
+      <div class="health-ring">
+        <svg viewBox="0 0 58 58">
+          <circle class="ring-track" cx="29" cy="29" r="22"/>
+          <circle class="ring-fill" cx="29" cy="29" r="22"
+            stroke="#2563eb"
+            stroke-dasharray="120 138"
+            stroke-dashoffset="0"/>
+        </svg>
+        <div class="ring-val">87%</div>
+      </div>
+      <div class="health-info">
+        <div class="health-label">Streaming Uptime</div>
+        <div class="health-val">99.97%</div>
+        <div class="health-sub">this month &bull; 8 min downtime</div>
+      </div>
+    </div>
+
+    <div class="health-card">
+      <div class="health-ring">
+        <svg viewBox="0 0 58 58">
+          <circle class="ring-track" cx="29" cy="29" r="22"/>
+          <circle class="ring-fill" cx="29" cy="29" r="22"
+            stroke="#d97706"
+            stroke-dasharray="105 138"
+            stroke-dashoffset="0"/>
+        </svg>
+        <div class="ring-val">76%</div>
+      </div>
+      <div class="health-info">
+        <div class="health-label">Query Performance</div>
+        <div class="health-val">avg 1.2s</div>
+        <div class="health-sub">p95: 3.8s &bull; p99: 7.1s</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Bottom grid ── -->
+  <div class="section-title">Object Distribution &amp; Stream Status</div>
+  <div class="bottom-grid">
+
+    <!-- Object breakdown panel -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Object Type Breakdown</span>
+        <span style="font-size:.72rem;color:#94a3b8;">Total: 210</span>
+      </div>
+      <div class="panel-body">
+
+        <div class="obj-row">
+          <div class="obj-dot" style="background:#16a34a;"></div>
+          <span class="obj-name">Data Lake Objects (DLO)</span>
+          <div class="obj-bar"><div class="obj-bar-fill" style="background:#16a34a;width:59%"></div></div>
+          <span class="obj-count">124</span>
+          <span class="obj-pct">59.0%</span>
+        </div>
+
+        <div class="obj-row">
+          <div class="obj-dot" style="background:#7c3aed;"></div>
+          <span class="obj-name">Data Model Objects (DMO)</span>
+          <div class="obj-bar"><div class="obj-bar-fill" style="background:#7c3aed;width:41%"></div></div>
+          <span class="obj-count">86</span>
+          <span class="obj-pct">41.0%</span>
+        </div>
+
+        <div class="obj-row">
+          <div class="obj-dot" style="background:#0891b2;"></div>
+          <span class="obj-name">Calculated Insights (CI)</span>
+          <div class="obj-bar"><div class="obj-bar-fill" style="background:#0891b2;width:11%"></div></div>
+          <span class="obj-count">23</span>
+          <span class="obj-pct">11.0%</span>
+        </div>
+
+        <div class="obj-row">
+          <div class="obj-dot" style="background:#d97706;"></div>
+          <span class="obj-name">Profile Objects</span>
+          <div class="obj-bar"><div class="obj-bar-fill" style="background:#d97706;width:7.1%"></div></div>
+          <span class="obj-count">15</span>
+          <span class="obj-pct">7.1%</span>
+        </div>
+
+        <div class="obj-row">
+          <div class="obj-dot" style="background:#2563eb;"></div>
+          <span class="obj-name">Engagement Objects</span>
+          <div class="obj-bar"><div class="obj-bar-fill" style="background:#2563eb;width:24.8%"></div></div>
+          <span class="obj-count">52</span>
+          <span class="obj-pct">24.8%</span>
+        </div>
+
+        <div class="obj-row">
+          <div class="obj-dot" style="background:#6b7280;"></div>
+          <span class="obj-name">Related Objects</span>
+          <div class="obj-bar"><div class="obj-bar-fill" style="background:#6b7280;width:27.1%"></div></div>
+          <span class="obj-count">57</span>
+          <span class="obj-pct">27.1%</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Data stream status panel -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Data Stream Status</span>
+        <span style="font-size:.72rem;color:#94a3b8;">Last synced 4 min ago</span>
+      </div>
+      <div class="panel-body" style="padding:0 1.25rem;">
+        <table class="status-table">
+          <thead>
+            <tr>
+              <th>Stream Name</th>
+              <th>Type</th>
+              <th>Records/h</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>CRM_Contact_Stream</strong></td>
+              <td style="color:#94a3b8;">DLO</td>
+              <td>42,100</td>
+              <td><span class="status-dot"><span class="dot active"></span>Active</span></td>
+            </tr>
+            <tr>
+              <td><strong>Web_Engagement_DS</strong></td>
+              <td style="color:#94a3b8;">Engagement</td>
+              <td>28,540</td>
+              <td><span class="status-dot"><span class="dot active"></span>Active</span></td>
+            </tr>
+            <tr>
+              <td><strong>Email_Campaign_DS</strong></td>
+              <td style="color:#94a3b8;">Engagement</td>
+              <td>9,800</td>
+              <td><span class="status-dot"><span class="dot active"></span>Active</span></td>
+            </tr>
+            <tr>
+              <td><strong>Order_History_DLO</strong></td>
+              <td style="color:#94a3b8;">DLO</td>
+              <td>18,200</td>
+              <td><span class="status-dot"><span class="dot active"></span>Active</span></td>
+            </tr>
+            <tr>
+              <td><strong>Mobile_App_Events</strong></td>
+              <td style="color:#94a3b8;">Engagement</td>
+              <td>—</td>
+              <td><span class="status-dot"><span class="dot warning"></span>Warning</span></td>
+            </tr>
+            <tr>
+              <td><strong>Legacy_ERP_Feed</strong></td>
+              <td style="color:#94a3b8;">DLO</td>
+              <td>—</td>
+              <td><span class="status-dot"><span class="dot error"></span>Error</span></td>
+            </tr>
+            <tr>
+              <td><strong>Loyalty_Profile_DS</strong></td>
+              <td style="color:#94a3b8;">Profile</td>
+              <td>3,210</td>
+              <td><span class="status-dot"><span class="dot active"></span>Active</span></td>
+            </tr>
+            <tr>
+              <td><strong>Partner_Data_Ingest</strong></td>
+              <td style="color:#94a3b8;">Related</td>
+              <td>—</td>
+              <td><span class="status-dot"><span class="dot idle"></span>Idle</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Extra KPIs row ── -->
+  <div class="section-title">Additional Intelligence</div>
+  <div class="kpi-grid" style="margin-bottom:1.75rem;">
+
+    <!-- Connected Sources -->
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div>
+          <div class="kpi-label">Connected Sources</div>
+          <div class="kpi-val">12</div>
+        </div>
+        <div class="kpi-icon-wrap blue">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/>
+          </svg>
+        </div>
+      </div>
+      <div class="kpi-sub">CRM, CDP, S3, Webhook +8 more</div>
+    </div>
+
+    <!-- Active Segments -->
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div>
+          <div class="kpi-label">Active Segments</div>
+          <div class="kpi-val">31</div>
+        </div>
+        <div class="kpi-icon-wrap green">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="kpi-sub">of 38 total &bull; 7 drafts</div>
+    </div>
+
+    <!-- Data Freshness -->
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div>
+          <div class="kpi-label">Data Freshness</div>
+          <div class="kpi-val">4 min</div>
+        </div>
+        <div class="kpi-icon-wrap cyan">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="kpi-sub">avg lag &bull; SLA target &lt; 10 min &#10003;</div>
+    </div>
+
+    <!-- Einstein Models -->
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div>
+          <div class="kpi-label">Einstein AI Models</div>
+          <div class="kpi-val">7 / 9</div>
+        </div>
+        <div class="kpi-icon-wrap purple">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+        </div>
+      </div>
+      <div class="kpi-sub">active &bull; 2 training &bull; avg accuracy 91.4%</div>
+    </div>
+
+  </div>
+
+  <!-- ── Charts ── -->
+  <div class="section-title">Trends &amp; Analytics</div>
+
+  <!-- Row 1: Ingestion Volume (wide) + Stream Status Breakdown -->
+  <div class="charts-row charts-row-2">
+
+    <!-- Daily Ingestion Volume — area line -->
+    <div class="chart-panel">
+      <div class="chart-head">
+        <div>
+          <div class="chart-title">Daily Ingestion Volume</div>
+          <div class="chart-sub">Records ingested per day &mdash; last 14 days</div>
+        </div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#16a34a;"></span>Records</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#2563eb;border-radius:2px;"></span>7-day avg</span>
+        </div>
+      </div>
+      <div class="chart-body"><canvas id="chartIngestion" height="90"></canvas></div>
+    </div>
+
+    <!-- Stream Status Breakdown — horizontal bar -->
+    <div class="chart-panel">
+      <div class="chart-head">
+        <div>
+          <div class="chart-title">Stream Status Breakdown</div>
+          <div class="chart-sub">All 47 data streams by current state</div>
+        </div>
+      </div>
+      <div class="chart-body"><canvas id="chartStreamStatus" height="160"></canvas></div>
+    </div>
+
+  </div>
+
+  <!-- Row 2: API Success Rate + Object Distribution donut + DLO/DMO by Category -->
+  <div class="charts-row charts-row-3">
+
+    <!-- API Success Rate — line -->
+    <div class="chart-panel">
+      <div class="chart-head">
+        <div>
+          <div class="chart-title">API Success Rate</div>
+          <div class="chart-sub">% success &mdash; last 14 days &mdash; SLA 99%</div>
+        </div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#16a34a;"></span>Success %</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#ef4444;border-radius:2px;height:2px;width:12px;"></span>SLA floor</span>
+        </div>
+      </div>
+      <div class="chart-body"><canvas id="chartApiSuccess" height="105"></canvas></div>
+    </div>
+
+    <!-- Object Type Distribution — doughnut -->
+    <div class="chart-panel">
+      <div class="chart-head">
+        <div>
+          <div class="chart-title">Object Distribution</div>
+          <div class="chart-sub">By type &mdash; total 210</div>
+        </div>
+      </div>
+      <div class="chart-body" style="display:flex;align-items:center;justify-content:center;padding:.75rem 1rem 1rem;">
+        <canvas id="chartDonut" width="210" height="210"></canvas>
+      </div>
+    </div>
+
+    <!-- DLO vs DMO by Category — grouped bar -->
+    <div class="chart-panel">
+      <div class="chart-head">
+        <div>
+          <div class="chart-title">DLO vs DMO by Category</div>
+          <div class="chart-sub">Profile / Engagement / Related</div>
+        </div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#16a34a;"></span>DLO</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#7c3aed;"></span>DMO</span>
+        </div>
+      </div>
+      <div class="chart-body"><canvas id="chartGroupedBar" height="160"></canvas></div>
+    </div>
+
+  </div>
+
+  <!-- Row 3: Data Quality Trend + Ingestion Rate by Source -->
+  <div class="charts-row charts-row-2">
+
+    <!-- Data Quality Score Trend -->
+    <div class="chart-panel">
+      <div class="chart-head">
+        <div>
+          <div class="chart-title">Data Quality Score Trend</div>
+          <div class="chart-sub">Completeness, accuracy &amp; consistency &mdash; last 12 weeks</div>
+        </div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#16a34a;"></span>Completeness</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#2563eb;"></span>Accuracy</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#d97706;"></span>Consistency</span>
+        </div>
+      </div>
+      <div class="chart-body"><canvas id="chartQuality" height="95"></canvas></div>
+    </div>
+
+    <!-- Ingestion by Source — stacked bar -->
+    <div class="chart-panel">
+      <div class="chart-head">
+        <div>
+          <div class="chart-title">Ingestion Volume by Source</div>
+          <div class="chart-sub">Top 5 sources &mdash; last 7 days (K records)</div>
+        </div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#16a34a;"></span>CRM</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#2563eb;"></span>Web</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#d97706;"></span>Email</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#7c3aed;"></span>Mobile</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#0891b2;"></span>ERP</span>
+        </div>
+      </div>
+      <div class="chart-body"><canvas id="chartSourceStack" height="95"></canvas></div>
+    </div>
+
+  </div>
+
+  <div class="dash-footer">
+    Salesforce Data Cloud &mdash; mimit.my.salesforce.com &mdash; All values are placeholder data
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  /* Refresh button */
+  function simulateRefresh() {
+    const btn  = document.getElementById('refresh-btn');
+    const icon = document.getElementById('refresh-icon');
+    const lbl  = document.getElementById('last-refresh-label');
+    btn.disabled = true;
+    icon.style.animation = 'spin .7s linear infinite';
+    setTimeout(() => {
+      btn.disabled = false;
+      icon.style.animation = '';
+      const now = new Date();
+      lbl.textContent = 'Last refreshed: ' +
+        now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    }, 1800);
+  }
+
+  /* ── Load live dashboard counts from API ── */
+  async function loadDashboardCounts() {
+    try {
+      const res  = await fetch('/api/dashboard/counts');
+      const data = await res.json();
+      if (data.success) {
+        const el = document.getElementById('stat-total-streams');
+        if (el) el.textContent = data.total_data_streams;
+      }
+    } catch (e) {
+      console.warn('Dashboard counts fetch failed:', e);
+    }
+  }
+
+  /* Animate progress bars on load */
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.prog-fill').forEach(el => {
+      const target = el.style.width;
+      el.style.width = '0%';
+      setTimeout(() => { el.style.width = target; }, 200);
+    });
+    loadDashboardCounts();
+    initCharts();
+  });
+
+  /* ── Chart.js global defaults ── */
+  Chart.defaults.font.family = "'Inter', sans-serif";
+  Chart.defaults.font.size   = 11;
+  Chart.defaults.color       = '#94a3b8';
+  Chart.defaults.plugins.legend.display = false;
+
+  function initCharts() {
+
+    const gridColor  = 'rgba(226,232,240,.7)';
+    const tickColor  = '#94a3b8';
+
+    /* ── Shared axis style ── */
+    const axisStyle = {
+      grid: { color: gridColor, drawBorder: false },
+      ticks: { color: tickColor, padding: 4 },
+      border: { display: false }
+    };
+
+    /* ─────────────────────────────────────────────
+       1. Daily Ingestion Volume — area + avg line
+    ───────────────────────────────────────────── */
+    const days = ['Mar 17','Mar 18','Mar 19','Mar 20','Mar 21','Mar 22','Mar 23',
+                  'Mar 24','Mar 25','Mar 26','Mar 27','Mar 28','Mar 29','Mar 30'];
+    const ingVol   = [14.1,15.8,13.9,16.2,17.0,11.4,12.1,15.3,16.9,17.4,18.0,17.8,19.1,18.2];
+    const ingAvg   = Array(14).fill(null).map((_,i) => {
+      const slice = ingVol.slice(Math.max(0,i-6), i+1);
+      return +(slice.reduce((a,b)=>a+b,0)/slice.length).toFixed(2);
+    });
+
+    new Chart(document.getElementById('chartIngestion'), {
+      type: 'line',
+      data: {
+        labels: days,
+        datasets: [
+          {
+            label: 'Records (M)',
+            data: ingVol,
+            borderColor: '#16a34a',
+            backgroundColor: 'rgba(22,163,74,.08)',
+            borderWidth: 2,
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            pointBackgroundColor: '#16a34a',
+            fill: true,
+            tension: .35
+          },
+          {
+            label: '7-day avg',
+            data: ingAvg,
+            borderColor: '#2563eb',
+            borderWidth: 1.5,
+            borderDash: [5,4],
+            pointRadius: 0,
+            fill: false,
+            tension: .35
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}M`
+            }
+          }
+        },
+        scales: {
+          x: { ...axisStyle, grid: { display: false } },
+          y: {
+            ...axisStyle,
+            beginAtZero: false,
+            ticks: {
+              ...axisStyle.ticks,
+              callback: v => v + 'M'
+            }
+          }
+        }
+      }
+    });
+
+    /* ─────────────────────────────────────────────
+       2. Stream Status Breakdown — horizontal bar
+    ───────────────────────────────────────────── */
+    new Chart(document.getElementById('chartStreamStatus'), {
+      type: 'bar',
+      data: {
+        labels: ['Active', 'Inactive', 'Warning', 'Error', 'Idle'],
+        datasets: [{
+          data: [38, 3, 3, 2, 1],
+          backgroundColor: ['#16a34a','#94a3b8','#f59e0b','#ef4444','#cbd5e1'],
+          borderRadius: 6,
+          barThickness: 22
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: ctx => `  ${ctx.parsed.x} streams`
+            }
+          }
+        },
+        scales: {
+          x: { ...axisStyle, beginAtZero: true, max: 45,
+               ticks: { ...axisStyle.ticks, stepSize: 10 } },
+          y: { ...axisStyle, grid: { display: false },
+               ticks: { color: '#334155', font: { weight: '600' } } }
+        }
+      }
+    });
+
+    /* ─────────────────────────────────────────────
+       3. API Success Rate — line with SLA annotation
+    ───────────────────────────────────────────── */
+    const apiRate = [99.1,98.7,99.3,99.5,99.0,98.9,99.2,99.4,99.6,99.1,99.3,99.5,99.0,99.2];
+
+    new Chart(document.getElementById('chartApiSuccess'), {
+      type: 'line',
+      data: {
+        labels: days,
+        datasets: [
+          {
+            label: 'Success %',
+            data: apiRate,
+            borderColor: '#16a34a',
+            backgroundColor: 'rgba(22,163,74,.07)',
+            borderWidth: 2,
+            pointRadius: 2.5,
+            pointHoverRadius: 5,
+            pointBackgroundColor: '#16a34a',
+            fill: true,
+            tension: .3
+          },
+          {
+            label: 'SLA 99%',
+            data: Array(14).fill(99.0),
+            borderColor: 'rgba(239,68,68,.45)',
+            borderWidth: 1.5,
+            borderDash: [4,3],
+            pointRadius: 0,
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}%`
+            }
+          }
+        },
+        scales: {
+          x: { ...axisStyle, grid: { display: false } },
+          y: {
+            ...axisStyle,
+            min: 98.0, max: 100,
+            ticks: { ...axisStyle.ticks, callback: v => v + '%' }
+          }
+        }
+      }
+    });
+
+    /* ─────────────────────────────────────────────
+       4. Object Distribution — doughnut
+    ───────────────────────────────────────────── */
+    new Chart(document.getElementById('chartDonut'), {
+      type: 'doughnut',
+      data: {
+        labels: ['DLO','DMO','Calc. Insights','Profiles','Engagement','Related'],
+        datasets: [{
+          data: [124, 86, 23, 15, 52, 57],
+          backgroundColor: ['#16a34a','#7c3aed','#0891b2','#d97706','#2563eb','#94a3b8'],
+          borderWidth: 2,
+          borderColor: '#fff',
+          hoverOffset: 6
+        }]
+      },
+      options: {
+        responsive: false,
+        cutout: '66%',
+        plugins: {
+          legend: {
+            display: true,
+            position: 'bottom',
+            labels: {
+              boxWidth: 10,
+              boxHeight: 10,
+              padding: 8,
+              color: '#475569',
+              font: { size: 10.5, weight: '500' }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.label}: ${ctx.parsed} objects`
+            }
+          }
+        }
+      }
+    });
+
+    /* ─────────────────────────────────────────────
+       5. DLO vs DMO by Category — grouped bar
+    ───────────────────────────────────────────── */
+    new Chart(document.getElementById('chartGroupedBar'), {
+      type: 'bar',
+      data: {
+        labels: ['Profile', 'Engagement', 'Related'],
+        datasets: [
+          {
+            label: 'DLO',
+            data: [28, 54, 42],
+            backgroundColor: '#16a34a',
+            borderRadius: 5,
+            barPercentage: .55
+          },
+          {
+            label: 'DMO',
+            data: [18, 38, 30],
+            backgroundColor: '#7c3aed',
+            borderRadius: 5,
+            barPercentage: .55
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}`
+            }
+          }
+        },
+        scales: {
+          x: { ...axisStyle, grid: { display: false },
+               ticks: { color: '#334155', font: { weight: '600' } } },
+          y: { ...axisStyle, beginAtZero: true }
+        }
+      }
+    });
+
+    /* ─────────────────────────────────────────────
+       6. Data Quality Score Trend — multi-line
+    ───────────────────────────────────────────── */
+    const wks = ['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12'];
+    new Chart(document.getElementById('chartQuality'), {
+      type: 'line',
+      data: {
+        labels: wks,
+        datasets: [
+          {
+            label: 'Completeness',
+            data: [91.2,91.8,92.0,92.5,92.1,93.0,93.4,93.8,94.0,94.2,94.5,94.6],
+            borderColor: '#16a34a',
+            backgroundColor: 'rgba(22,163,74,.06)',
+            borderWidth: 2,
+            pointRadius: 2.5,
+            pointBackgroundColor: '#16a34a',
+            fill: true,
+            tension: .35
+          },
+          {
+            label: 'Accuracy',
+            data: [88.5,89.0,89.8,90.2,90.5,91.0,91.5,91.9,92.4,92.8,93.1,93.5],
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37,99,235,.04)',
+            borderWidth: 2,
+            pointRadius: 2.5,
+            pointBackgroundColor: '#2563eb',
+            fill: false,
+            tension: .35
+          },
+          {
+            label: 'Consistency',
+            data: [85.0,86.2,87.0,87.5,88.1,88.8,89.4,90.0,90.5,91.0,91.5,92.0],
+            borderColor: '#d97706',
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            pointRadius: 2.5,
+            pointBackgroundColor: '#d97706',
+            fill: false,
+            tension: .35
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}%`
+            }
+          }
+        },
+        scales: {
+          x: { ...axisStyle, grid: { display: false } },
+          y: {
+            ...axisStyle,
+            min: 83, max: 97,
+            ticks: { ...axisStyle.ticks, callback: v => v + '%' }
+          }
+        }
+      }
+    });
+
+    /* ─────────────────────────────────────────────
+       7. Ingestion by Source — stacked bar
+    ───────────────────────────────────────────── */
+    const srcDays = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    new Chart(document.getElementById('chartSourceStack'), {
+      type: 'bar',
+      data: {
+        labels: srcDays,
+        datasets: [
+          { label:'CRM',    data:[42,45,43,47,44,18,20], backgroundColor:'#16a34a', borderRadius:0, stack:'s' },
+          { label:'Web',    data:[28,30,27,32,29,12,14], backgroundColor:'#2563eb', borderRadius:0, stack:'s' },
+          { label:'Email',  data:[12,14,11,15,13, 4, 5], backgroundColor:'#d97706', borderRadius:0, stack:'s' },
+          { label:'Mobile', data:[18,20,17,21,19, 8, 9], backgroundColor:'#7c3aed', borderRadius:0, stack:'s' },
+          { label:'ERP',    data:[ 8, 9, 7,10, 8, 2, 3], backgroundColor:'#0891b2', borderRadius:4, stack:'s' }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}K`
+            }
+          }
+        },
+        scales: {
+          x: { ...axisStyle, grid: { display: false }, stacked: true,
+               ticks: { color: '#334155', font: { weight: '600' } } },
+          y: { ...axisStyle, stacked: true,
+               ticks: { ...axisStyle.ticks, callback: v => v + 'K' } }
+        }
+      }
+    });
+
+  } /* end initCharts */
+</script>
+</body>
+</html>

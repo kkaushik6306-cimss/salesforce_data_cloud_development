@@ -1,0 +1,960 @@
+{
+    "collection": {
+        "count": 15,
+        "currentPageToken": "eyJvZiI6MCwiYnMiOjI1fQ==",
+        "currentPageUrl": "/services/data/v64.0/ssot/calculated-insights?batchSize=25&offset=0&pageToken=eyJvZiI6MCwiYnMiOjI1fQ%3D%3D",
+        "items": [
+            {
+                "apiName": "template_feedback_reasons__cio",
+                "calculatedInsightStatus": "ACTIVE",
+                "creationType": "Custom",
+                "dataSpace": "default",
+                "definitionStatus": "IN_USE",
+                "definitionType": "CALCULATED_METRIC",
+                "description": "Explicit Feedback Reasons at Prompt Template Level",
+                "dimensions": [
+                    {
+                        "apiName": "prompt_template__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "gatewayRequestId__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "prompt_template",
+                        "fieldRole": "DIMENSION",
+                        "formula": "GenAIGatewayRequest__dlm.promptTemplateDevName__c"
+                    },
+                    {
+                        "apiName": "app_feedback__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "gatewayRequestId__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "app_feedback",
+                        "fieldRole": "DIMENSION",
+                        "formula": "GenAIFeedbackDetail__dlm.appFeedback__c"
+                    },
+                    {
+                        "apiName": "feedback__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "gatewayRequestId__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "feedback",
+                        "fieldRole": "DIMENSION",
+                        "formula": "GenAIFeedback__dlm.feedback__c"
+                    }
+                ],
+                "displayName": "Prompt Template Feedback Reasons",
+                "expression": "SELECT GenAIFeedbackDetail__dlm.appFeedback__c AS app_feedback__c, GenAIGatewayRequest__dlm.promptTemplateDevName__c AS prompt_template__c,\n    GenAIFeedback__dlm.feedback__c AS feedback__c, COUNT(GenAIGatewayRequest__dlm.promptTemplateDevName__c ) AS counts__c\nFROM GenAIFeedbackDetail__dlm\n    FULL OUTER JOIN GenAIFeedback__dlm ON (GenAIFeedbackDetail__dlm.parent__c = GenAIFeedback__dlm.feedbackId__c)\n    FULL OUTER JOIN GenAIGeneration__dlm ON (GenAIFeedback__dlm.generationId__c = GenAIGeneration__dlm.generationId__c) \n    FULL OUTER JOIN GenAIGatewayResponse__dlm ON (GenAIGeneration__dlm.generationResponseId__c = GenAIGatewayResponse__dlm.generationResponseId__c) \n    FULL OUTER JOIN GenAIGatewayRequest__dlm ON (GenAIGatewayResponse__dlm.generationRequestId__c = GenAIGatewayRequest__dlm.gatewayRequestId__c)\nWHERE GenAIGatewayRequest__dlm.promptTemplateDevName__c  IS NOT NULL\nAND GenAIFeedback__dlm.feedback__c = &#39;BAD&#39;\nGROUP BY prompt_template__c, feedback__c, app_feedback__c",
+                "isEnabled": true,
+                "lastCalcInsightStatusDateTime": "2025-09-23T20:53:08.000Z",
+                "lastCalcInsightStatusErrorCode": null,
+                "lastRunDateTime": "2026-04-02T18:11:46.000Z",
+                "lastRunStatus": "SUCCESS",
+                "lastRunStatusDateTime": "2026-04-02T18:13:42.000Z",
+                "lastRunStatusErrorCode": null,
+                "measures": [
+                    {
+                        "apiName": "counts__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "gatewayRequestId__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Number",
+                        "displayName": "counts",
+                        "fieldAggregationType": "AGGREGATABLE",
+                        "fieldRole": "MEASURE",
+                        "formula": "COUNT(GenAIGatewayRequest__dlm.promptTemplateDevName__c )"
+                    }
+                ],
+                "publishScheduleEndDate": null,
+                "publishScheduleInterval": "ONE",
+                "publishScheduleStartDateTime": "2025-09-23T22:00"
+            },
+            {
+                "apiName": "template_feedback__cio",
+                "calculatedInsightStatus": "ACTIVE",
+                "creationType": "Custom",
+                "dataSpace": "default",
+                "definitionStatus": "IN_USE",
+                "definitionType": "CALCULATED_METRIC",
+                "description": "Explicit Feedback at Prompt Template Level",
+                "dimensions": [
+                    {
+                        "apiName": "feedback__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "generationResponseId__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "feedback",
+                        "fieldRole": "DIMENSION",
+                        "formula": "GenAIFeedback__dlm.feedback__c"
+                    },
+                    {
+                        "apiName": "prompt_template__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "generationResponseId__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "prompt_template",
+                        "fieldRole": "DIMENSION",
+                        "formula": "GenAIGatewayRequest__dlm.promptTemplateDevName__c"
+                    }
+                ],
+                "displayName": "Prompt Template Feedback",
+                "expression": "SELECT GenAIGatewayRequest__dlm.promptTemplateDevName__c AS prompt_template__c, GenAIFeedback__dlm.feedback__c AS feedback__c, COUNT(GenAIFeedback__dlm.feedback__c) AS counts__c\nFROM GenAIFeedback__dlm \n    FULL OUTER JOIN GenAIGeneration__dlm ON (GenAIFeedback__dlm.generationId__c = GenAIGeneration__dlm.generationId__c) \n    FULL OUTER JOIN GenAIGatewayResponse__dlm ON (GenAIGeneration__dlm.generationResponseId__c = GenAIGatewayResponse__dlm.generationResponseId__c) \n    FULL OUTER JOIN GenAIGatewayRequest__dlm ON (GenAIGatewayResponse__dlm.generationRequestId__c = GenAIGatewayRequest__dlm.gatewayRequestId__c)\nWHERE GenAIGatewayRequest__dlm.promptTemplateDevName__c  IS NOT NULL\nGROUP BY prompt_template__c, feedback__c",
+                "isEnabled": true,
+                "lastCalcInsightStatusDateTime": "2025-09-23T20:52:59.000Z",
+                "lastCalcInsightStatusErrorCode": null,
+                "lastRunDateTime": "2026-04-02T18:11:46.000Z",
+                "lastRunStatus": "SUCCESS",
+                "lastRunStatusDateTime": "2026-04-02T18:13:42.000Z",
+                "lastRunStatusErrorCode": null,
+                "measures": [
+                    {
+                        "apiName": "counts__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "generationResponseId__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Number",
+                        "displayName": "counts",
+                        "fieldAggregationType": "AGGREGATABLE",
+                        "fieldRole": "MEASURE",
+                        "formula": "COUNT(GenAIFeedback__dlm.feedback__c)"
+                    }
+                ],
+                "publishScheduleEndDate": null,
+                "publishScheduleInterval": "ONE",
+                "publishScheduleStartDateTime": "2025-09-23T21:00"
+            },
+            {
+                "apiName": "Patients_With_Superficial_Venous_Disease__cio",
+                "calculatedInsightStatus": "ACTIVE",
+                "creationType": "Custom",
+                "dataSpace": "default",
+                "definitionStatus": "IN_USE",
+                "definitionType": "CALCULATED_METRIC",
+                "description": "Patients With Superficial Venous Disease",
+                "dimensions": [
+                    {
+                        "apiName": "key_qualifier_individual__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "KQ_Id__c",
+                            "type": "STREAMING_DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "Key Qualifier Individual",
+                        "fieldRole": "DIMENSION",
+                        "formula": "ssot__Individual__dlm.KQ_Id__c"
+                    },
+                    {
+                        "apiName": "individual__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "KQ_Id__c",
+                            "type": "STREAMING_DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "Individual",
+                        "fieldRole": "DIMENSION",
+                        "formula": "ssot__Individual__dlm.ssot__Id__c"
+                    },
+                    {
+                        "apiName": "unified_individual__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "KQ_Id__c",
+                            "type": "STREAMING_DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "Unified Individual",
+                        "fieldRole": "DIMENSION",
+                        "formula": "UnifiedIndividual__dlm.ssot__Id__c"
+                    }
+                ],
+                "displayName": "Patients With Superficial Venous Disease",
+                "expression": "SELECT\n  SUM( CASE  WHEN (\n  amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.10&#39;\n  or amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.11&#39;\n  or amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.12&#39;\n  or amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.811&#39;\n  or amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.812&#39;\n  or amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.813&#39;\n  or amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.819&#39;\n  or amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.891&#39;\n  or amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.892&#39;\n  or amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.893&#39;\n  or amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.899&#39;\n) THEN 1 ELSE 0 END) AS superficialvenousdisease__c,\n  UnifiedIndividual__dlm.ssot__Id__c AS unified_individual__c,\n  ssot__Individual__dlm.ssot__Id__c AS individual__c,\n  ssot__Individual__dlm.KQ_Id__c AS key_qualifier_individual__c\nFROM UnifiedIndividual__dlm\n  LEFT OUTER JOIN IndividualIdentityLink__dlm\n    ON (UnifiedIndividual__dlm.ssot__Id__c = IndividualIdentityLink__dlm.UnifiedRecordId__c)\n  LEFT OUTER JOIN ssot__Individual__dlm\n    ON (IndividualIdentityLink__dlm.SourceRecordId__c = ssot__Individual__dlm.ssot__Id__c AND IndividualIdentityLink__dlm.KQ_SourceRecordId__c = ssot__Individual__dlm.KQ_Id__c)\n  JOIN amd_odbc_ehr_itemdiagnosis__dlm\n    ON (ssot__Individual__dlm.ssot__Id__c = amd_odbc_ehr_itemdiagnosis__dlm.PatientID__c AND ssot__Individual__dlm.KQ_Id__c = amd_odbc_ehr_itemdiagnosis__dlm.KQ_PatientID__c)\nGROUP BY\n  unified_individual__c,\n  individual__c,\n  key_qualifier_individual__c",
+                "isEnabled": true,
+                "lastCalcInsightStatusDateTime": "2026-02-07T09:13:20.000Z",
+                "lastCalcInsightStatusErrorCode": null,
+                "lastRunDateTime": "2026-02-07T09:16:06.000Z",
+                "lastRunStatus": "SUCCESS",
+                "lastRunStatusDateTime": "2026-02-07T09:19:41.000Z",
+                "lastRunStatusErrorCode": null,
+                "measures": [
+                    {
+                        "apiName": "superficialvenousdisease__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "KQ_Id__c",
+                            "type": "STREAMING_DATA_MODEL"
+                        },
+                        "dataType": "Number",
+                        "displayName": "SuperficialVenousDisease",
+                        "fieldAggregationType": "AGGREGATABLE",
+                        "fieldRole": "MEASURE",
+                        "formula": "SUM( CASE  WHEN (   amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.10&#39;   or amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.11&#39;   or amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.12&#39;   or amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.811&#39;   or amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.812&#39;   or amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.813&#39;   or amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.819&#39;   or amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.891&#39;   or amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.892&#39;   or amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.893&#39;   or amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c = &#39;I83.899&#39; ) THEN 1 ELSE 0 END)"
+                    }
+                ],
+                "publishScheduleEndDate": null,
+                "publishScheduleInterval": "NOT_SCHEDULED",
+                "publishScheduleStartDateTime": null
+            },
+            {
+                "apiName": "template_version_feedback_reasons__cio",
+                "calculatedInsightStatus": "ACTIVE",
+                "creationType": "Custom",
+                "dataSpace": "default",
+                "definitionStatus": "IN_USE",
+                "definitionType": "CALCULATED_METRIC",
+                "description": "Explicit Feedback Reasons at Prompt Template Version Level",
+                "dimensions": [
+                    {
+                        "apiName": "feedback__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "generationResponseId__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "feedback",
+                        "fieldRole": "DIMENSION",
+                        "formula": "GenAIFeedback__dlm.feedback__c"
+                    },
+                    {
+                        "apiName": "prompt_template_version__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "generationResponseId__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "prompt_template_version",
+                        "fieldRole": "DIMENSION",
+                        "formula": "GenAIGatewayRequest__dlm.promptTemplateVersionNo__c"
+                    },
+                    {
+                        "apiName": "app_feedback__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "generationResponseId__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "app_feedback",
+                        "fieldRole": "DIMENSION",
+                        "formula": "GenAIFeedbackDetail__dlm.appFeedback__c"
+                    },
+                    {
+                        "apiName": "prompt_template__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "generationResponseId__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "prompt_template",
+                        "fieldRole": "DIMENSION",
+                        "formula": "GenAIGatewayRequest__dlm.promptTemplateDevName__c"
+                    }
+                ],
+                "displayName": "Prompt Template Version Feedback Reasons",
+                "expression": "SELECT GenAIFeedbackDetail__dlm.appFeedback__c AS app_feedback__c, GenAIGatewayRequest__dlm.promptTemplateDevName__c AS prompt_template__c, GenAIGatewayRequest__dlm.promptTemplateVersionNo__c AS prompt_template_version__c,\nGenAIFeedback__dlm.feedback__c AS feedback__c, COUNT(GenAIGatewayRequest__dlm.promptTemplateVersionNo__c) AS counts__c\nFROM GenAIFeedbackDetail__dlm\n    FULL OUTER JOIN GenAIFeedback__dlm ON (GenAIFeedbackDetail__dlm.parent__c = GenAIFeedback__dlm.feedbackId__c)\n    FULL OUTER JOIN GenAIGeneration__dlm ON (GenAIFeedback__dlm.generationId__c = GenAIGeneration__dlm.generationId__c) \n    FULL OUTER JOIN GenAIGatewayResponse__dlm ON (GenAIGeneration__dlm.generationResponseId__c = GenAIGatewayResponse__dlm.generationResponseId__c) \n    FULL OUTER JOIN GenAIGatewayRequest__dlm ON (GenAIGatewayResponse__dlm.generationRequestId__c = GenAIGatewayRequest__dlm.gatewayRequestId__c)\nWHERE GenAIGatewayRequest__dlm.promptTemplateDevName__c  IS NOT NULL\nAND GenAIFeedback__dlm.feedback__c = &#39;BAD&#39;\nGROUP BY prompt_template__c, prompt_template_version__c, feedback__c, app_feedback__c",
+                "isEnabled": true,
+                "lastCalcInsightStatusDateTime": "2025-09-23T20:53:26.000Z",
+                "lastCalcInsightStatusErrorCode": null,
+                "lastRunDateTime": "2026-04-02T18:11:46.000Z",
+                "lastRunStatus": "SUCCESS",
+                "lastRunStatusDateTime": "2026-04-02T18:13:42.000Z",
+                "lastRunStatusErrorCode": null,
+                "measures": [
+                    {
+                        "apiName": "counts__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "generationResponseId__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Number",
+                        "displayName": "counts",
+                        "fieldAggregationType": "AGGREGATABLE",
+                        "fieldRole": "MEASURE",
+                        "formula": "COUNT(GenAIGatewayRequest__dlm.promptTemplateVersionNo__c)"
+                    }
+                ],
+                "publishScheduleEndDate": null,
+                "publishScheduleInterval": "ONE",
+                "publishScheduleStartDateTime": "2025-09-24T00:00"
+            },
+            {
+                "apiName": "example__cio",
+                "calculatedInsightStatus": "ACTIVE",
+                "creationType": "Custom",
+                "dataSpace": "default",
+                "definitionStatus": "IN_USE",
+                "definitionType": "CALCULATED_METRIC",
+                "description": null,
+                "dimensions": [],
+                "displayName": "example",
+                "expression": "SELECT\nCOUNT(FACT_RESOLVED_APPOINTMENT__dlm.appointment_id__c) AS total_appointments__c\nFROM FACT_RESOLVED_APPOINTMENT__dlm",
+                "isEnabled": true,
+                "lastCalcInsightStatusDateTime": "2026-03-09T07:24:12.000Z",
+                "lastCalcInsightStatusErrorCode": null,
+                "lastRunDateTime": null,
+                "lastRunStatus": null,
+                "lastRunStatusDateTime": null,
+                "lastRunStatusErrorCode": null,
+                "measures": [
+                    {
+                        "apiName": "total_appointments__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "appointment_id__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Number",
+                        "displayName": "total_appointments",
+                        "fieldAggregationType": "AGGREGATABLE",
+                        "fieldRole": "MEASURE",
+                        "formula": "COUNT(FACT_RESOLVED_APPOINTMENT__dlm.appointment_id__c)"
+                    }
+                ],
+                "publishScheduleEndDate": null,
+                "publishScheduleInterval": "NOT_SCHEDULED",
+                "publishScheduleStartDateTime": null
+            },
+            {
+                "apiName": "template_version_feedback__cio",
+                "calculatedInsightStatus": "ACTIVE",
+                "creationType": "Custom",
+                "dataSpace": "default",
+                "definitionStatus": "IN_USE",
+                "definitionType": "CALCULATED_METRIC",
+                "description": "Explicit Feedback at Prompt Template Version Level",
+                "dimensions": [
+                    {
+                        "apiName": "prompt_template__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "promptTemplateDevName__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "prompt_template",
+                        "fieldRole": "DIMENSION",
+                        "formula": "GenAIGatewayRequest__dlm.promptTemplateDevName__c"
+                    },
+                    {
+                        "apiName": "prompt_template_version__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "promptTemplateDevName__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "prompt_template_version",
+                        "fieldRole": "DIMENSION",
+                        "formula": "GenAIGatewayRequest__dlm.promptTemplateVersionNo__c"
+                    },
+                    {
+                        "apiName": "feedback__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "promptTemplateDevName__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "feedback",
+                        "fieldRole": "DIMENSION",
+                        "formula": "GenAIFeedback__dlm.feedback__c"
+                    }
+                ],
+                "displayName": "Prompt Template Version Feedback",
+                "expression": "SELECT GenAIGatewayRequest__dlm.promptTemplateDevName__c AS prompt_template__c, GenAIGatewayRequest__dlm.promptTemplateVersionNo__c AS prompt_template_version__c,\nGenAIFeedback__dlm.feedback__c AS feedback__c, COUNT(GenAIGatewayRequest__dlm.promptTemplateVersionNo__c) AS counts__c\nFROM GenAIFeedback__dlm \n    FULL OUTER JOIN GenAIGeneration__dlm ON (GenAIFeedback__dlm.generationId__c = GenAIGeneration__dlm.generationId__c)\n    FULL OUTER JOIN GenAIGatewayResponse__dlm ON (GenAIGeneration__dlm.generationResponseId__c = GenAIGatewayResponse__dlm.generationResponseId__c) \n    FULL OUTER JOIN GenAIGatewayRequest__dlm ON (GenAIGatewayResponse__dlm.generationRequestId__c = GenAIGatewayRequest__dlm.gatewayRequestId__c)\nWHERE GenAIGatewayRequest__dlm.promptTemplateDevName__c  IS NOT NULL\nGROUP BY prompt_template__c, prompt_template_version__c, feedback__c",
+                "isEnabled": true,
+                "lastCalcInsightStatusDateTime": "2025-09-23T20:53:17.000Z",
+                "lastCalcInsightStatusErrorCode": null,
+                "lastRunDateTime": "2026-04-02T18:11:46.000Z",
+                "lastRunStatus": "SUCCESS",
+                "lastRunStatusDateTime": "2026-04-02T18:13:42.000Z",
+                "lastRunStatusErrorCode": null,
+                "measures": [
+                    {
+                        "apiName": "counts__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "promptTemplateDevName__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Number",
+                        "displayName": "counts",
+                        "fieldAggregationType": "AGGREGATABLE",
+                        "fieldRole": "MEASURE",
+                        "formula": "COUNT(GenAIGatewayRequest__dlm.promptTemplateVersionNo__c)"
+                    }
+                ],
+                "publishScheduleEndDate": null,
+                "publishScheduleInterval": "ONE",
+                "publishScheduleStartDateTime": "2025-09-23T23:00"
+            },
+            {
+                "apiName": "CI_Provider_ReferredVenousPatients_v2__cio",
+                "calculatedInsightStatus": "ACTIVE",
+                "creationType": "Custom",
+                "dataSpace": "default",
+                "definitionStatus": "IN_USE",
+                "definitionType": "CALCULATED_METRIC",
+                "description": null,
+                "dimensions": [
+                    {
+                        "apiName": "individual__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "ssot__PersonName__c",
+                            "type": "STREAMING_DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "Individual",
+                        "fieldRole": "DIMENSION",
+                        "formula": "ssot__Individual__dlm.ssot__Id__c"
+                    },
+                    {
+                        "apiName": "name__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "ssot__PersonName__c",
+                            "type": "STREAMING_DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "Name",
+                        "fieldRole": "DIMENSION",
+                        "formula": "ssot__Individual__dlm.ssot__PersonName__c"
+                    }
+                ],
+                "displayName": "CI_Provider_ReferredVenousPatients_v2",
+                "expression": "SELECT\n  COUNT(ssot__AccountContact__dlm.Contact__c) AS referring_provider__c,\n  ssot__Individual__dlm.ssot__Id__c AS individual__c,\n  ssot__Individual__dlm.ssot__PersonName__c AS name__c\nFROM ssot__AccountContact__dlm\n  JOIN ssot__Individual__dlm\n    ON (ssot__AccountContact__dlm.EHR_Referral_Source_Contact__c = ssot__Individual__dlm.ssot__Id__c)\nGROUP BY\n  individual__c,\n  name__c",
+                "isEnabled": true,
+                "lastCalcInsightStatusDateTime": "2026-02-09T17:41:57.000Z",
+                "lastCalcInsightStatusErrorCode": null,
+                "lastRunDateTime": "2026-02-09T17:33:08.000Z",
+                "lastRunStatus": "SUCCESS",
+                "lastRunStatusDateTime": "2026-02-09T17:34:02.000Z",
+                "lastRunStatusErrorCode": null,
+                "measures": [
+                    {
+                        "apiName": "referring_provider__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "ssot__PersonName__c",
+                            "type": "STREAMING_DATA_MODEL"
+                        },
+                        "dataType": "Number",
+                        "displayName": "Referring Provider",
+                        "fieldAggregationType": "AGGREGATABLE",
+                        "fieldRole": "MEASURE",
+                        "formula": "COUNT(ssot__AccountContact__dlm.Contact__c)"
+                    }
+                ],
+                "publishScheduleEndDate": null,
+                "publishScheduleInterval": "NOT_SCHEDULED",
+                "publishScheduleStartDateTime": null
+            },
+            {
+                "apiName": "Patients_With_Venous_Disease__cio",
+                "calculatedInsightStatus": "ACTIVE",
+                "creationType": "Custom",
+                "dataSpace": "default",
+                "definitionStatus": "IN_USE",
+                "definitionType": "CALCULATED_METRIC",
+                "description": "Patients With Venous Disease",
+                "dimensions": [
+                    {
+                        "apiName": "unififed_individual__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "ssot__Id__c",
+                            "type": "STREAMING_DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "Unififed Individual",
+                        "fieldRole": "DIMENSION",
+                        "formula": "UnifiedIndividual__dlm.ssot__Id__c"
+                    },
+                    {
+                        "apiName": "individual__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "ssot__Id__c",
+                            "type": "STREAMING_DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "Individual",
+                        "fieldRole": "DIMENSION",
+                        "formula": "ssot__Individual__dlm.ssot__Id__c"
+                    }
+                ],
+                "displayName": "Patients With Venous Disease",
+                "expression": "SELECT\n  SUM( CASE  WHEN (RDS_vw_ODBC_appts_Appointments_other__dlm.ApptTypes__c contains &#39;VEIN&#39;) THEN 1 ELSE 0 END) AS hasvenousdisease__c,\n  UnifiedIndividual__dlm.ssot__Id__c AS unififed_individual__c,\n  ssot__Individual__dlm.ssot__Id__c AS individual__c\nFROM UnifiedIndividual__dlm\n  LEFT OUTER JOIN IndividualIdentityLink__dlm\n    ON (UnifiedIndividual__dlm.ssot__Id__c = IndividualIdentityLink__dlm.UnifiedRecordId__c)\n  LEFT OUTER JOIN ssot__Individual__dlm\n    ON (IndividualIdentityLink__dlm.SourceRecordId__c = ssot__Individual__dlm.ssot__Id__c AND IndividualIdentityLink__dlm.KQ_SourceRecordId__c = ssot__Individual__dlm.KQ_Id__c)\n  JOIN RDS_vw_ODBC_appts_Appointments_other__dlm\n    ON (ssot__Individual__dlm.ssot__Id__c = RDS_vw_ODBC_appts_Appointments_other__dlm.PatientFID__c AND ssot__Individual__dlm.KQ_Id__c = RDS_vw_ODBC_appts_Appointments_other__dlm.KQ_PatientFID__c)\nGROUP BY\n  unififed_individual__c,\n  individual__c",
+                "isEnabled": true,
+                "lastCalcInsightStatusDateTime": "2026-02-07T10:05:02.000Z",
+                "lastCalcInsightStatusErrorCode": null,
+                "lastRunDateTime": "2026-02-07T10:11:57.000Z",
+                "lastRunStatus": "SUCCESS",
+                "lastRunStatusDateTime": "2026-02-07T10:13:19.000Z",
+                "lastRunStatusErrorCode": null,
+                "measures": [
+                    {
+                        "apiName": "hasvenousdisease__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "ssot__Id__c",
+                            "type": "STREAMING_DATA_MODEL"
+                        },
+                        "dataType": "Number",
+                        "displayName": "hasVenousDisease",
+                        "fieldAggregationType": "AGGREGATABLE",
+                        "fieldRole": "MEASURE",
+                        "formula": "SUM( CASE  WHEN (RDS_vw_ODBC_appts_Appointments_other__dlm.ApptTypes__c RLIKE &#39;VEIN&#39;) THEN 1 ELSE 0 END)"
+                    }
+                ],
+                "publishScheduleEndDate": null,
+                "publishScheduleInterval": "NOT_SCHEDULED",
+                "publishScheduleStartDateTime": null
+            },
+            {
+                "apiName": "ccr_first_pass_claims__cio",
+                "calculatedInsightStatus": "ACTIVE",
+                "creationType": "Custom",
+                "dataSpace": "default",
+                "definitionStatus": "IN_USE",
+                "definitionType": "CALCULATED_METRIC",
+                "description": null,
+                "dimensions": [
+                    {
+                        "apiName": "dso__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "DataSourceObject__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "dso",
+                        "fieldRole": "DIMENSION",
+                        "formula": "amd_pm_vw_odbc_actv_claimsubmission__dlm.DataSourceObject__c"
+                    }
+                ],
+                "displayName": "ccr_first_pass_claims",
+                "expression": "SELECT amd_pm_vw_odbc_actv_claimsubmission__dlm.DataSourceObject__c as dso__c, count(*) as claim_count__c\nFROM amd_pm_vw_odbc_actv_claimsubmission__dlm\nLEFT JOIN (\nSELECT\namd_pm_vw_odbc_actv_claimsubmission__dlm.claimid__c as id__c,\nREGEXP_EXTRACT(amd_pm_vw_odbc_actv_claimsubmission__dlm.claimid__c,&#39;([0-9]+)&#39;, 1) AS prefix__c\nFROM\namd_pm_vw_odbc_actv_claimsubmission__dlm\nWHERE REGEXP_EXTRACT(amd_pm_vw_odbc_actv_claimsubmission__dlm.claimid__c,&#39;([A-Z]+)&#39;, 1)  NOT IN (&#39;A&#39;)\n) b\nON REGEXP_EXTRACT(amd_pm_vw_odbc_actv_claimsubmission__dlm.claimid__c,&#39;([0-9]+)&#39;, 1) = b.prefix__c\nWHERE b.id__c IS NULL\nGROUP BY amd_pm_vw_odbc_actv_claimsubmission__dlm.DataSourceObject__c",
+                "isEnabled": true,
+                "lastCalcInsightStatusDateTime": "2025-11-09T08:54:03.000Z",
+                "lastCalcInsightStatusErrorCode": null,
+                "lastRunDateTime": "2025-11-09T08:55:57.000Z",
+                "lastRunStatus": "SUCCESS",
+                "lastRunStatusDateTime": "2025-11-09T08:56:25.000Z",
+                "lastRunStatusErrorCode": null,
+                "measures": [
+                    {
+                        "apiName": "claim_count__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "DataSourceObject__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Number",
+                        "displayName": "claim_count",
+                        "fieldAggregationType": "AGGREGATABLE",
+                        "fieldRole": "MEASURE",
+                        "formula": "count(*)"
+                    }
+                ],
+                "publishScheduleEndDate": null,
+                "publishScheduleInterval": "NOT_SCHEDULED",
+                "publishScheduleStartDateTime": null
+            },
+            {
+                "apiName": "CI_Provider_RefferringProviders_v2__cio",
+                "calculatedInsightStatus": "ACTIVE",
+                "creationType": "Custom",
+                "dataSpace": "default",
+                "definitionStatus": "IN_USE",
+                "definitionType": "CALCULATED_METRIC",
+                "description": null,
+                "dimensions": [
+                    {
+                        "apiName": "unified_individual__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "UnifiedRecordId__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "Unified Individual",
+                        "fieldRole": "DIMENSION",
+                        "formula": "UnifiedIndividual__dlm.ssot__Id__c"
+                    },
+                    {
+                        "apiName": "individual__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "UnifiedRecordId__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "Individual",
+                        "fieldRole": "DIMENSION",
+                        "formula": "ssot__Individual__dlm.ssot__Id__c"
+                    }
+                ],
+                "displayName": "CI_Provider_RefferringProviders_v2",
+                "expression": "SELECT\n  COUNT(ssot__AccountContact__dlm.EHR_Referral_Source_Contact__c) AS patientreferred__c,\n  UnifiedIndividual__dlm.ssot__Id__c AS unified_individual__c,\n  ssot__Individual__dlm.ssot__Id__c AS individual__c\nFROM UnifiedIndividual__dlm\n  LEFT OUTER JOIN IndividualIdentityLink__dlm\n    ON (UnifiedIndividual__dlm.ssot__Id__c = IndividualIdentityLink__dlm.UnifiedRecordId__c)\n  LEFT OUTER JOIN ssot__Individual__dlm\n    ON (IndividualIdentityLink__dlm.SourceRecordId__c = ssot__Individual__dlm.ssot__Id__c)\n  LEFT OUTER JOIN ssot__AccountContact__dlm\n    ON (IndividualIdentityLink__dlm.SourceRecordId__c = ssot__AccountContact__dlm.EHR_Referral_Source_Contact__c)\n  LEFT OUTER JOIN amd_odbc_ehr_itemdiagnosis__dlm\n    ON (ssot__Individual__dlm.ssot__Id__c = amd_odbc_ehr_itemdiagnosis__dlm.PatientID__c)\nGROUP BY\n  unified_individual__c,\n  individual__c",
+                "isEnabled": true,
+                "lastCalcInsightStatusDateTime": "2026-02-25T08:56:48.000Z",
+                "lastCalcInsightStatusErrorCode": null,
+                "lastRunDateTime": "2026-02-25T08:59:50.000Z",
+                "lastRunStatus": "SUCCESS",
+                "lastRunStatusDateTime": "2026-02-25T09:00:52.000Z",
+                "lastRunStatusErrorCode": null,
+                "measures": [
+                    {
+                        "apiName": "patientreferred__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "UnifiedRecordId__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Number",
+                        "displayName": "PatientReferred",
+                        "fieldAggregationType": "AGGREGATABLE",
+                        "fieldRole": "MEASURE",
+                        "formula": "COUNT(ssot__AccountContact__dlm.EHR_Referral_Source_Contact__c)"
+                    }
+                ],
+                "publishScheduleEndDate": null,
+                "publishScheduleInterval": "NOT_SCHEDULED",
+                "publishScheduleStartDateTime": null
+            },
+            {
+                "apiName": "template_generation_count__cio",
+                "calculatedInsightStatus": "ACTIVE",
+                "creationType": "Custom",
+                "dataSpace": "default",
+                "definitionStatus": "IN_USE",
+                "definitionType": "CALCULATED_METRIC",
+                "description": "Number of generations at Prompt Template Level",
+                "dimensions": [
+                    {
+                        "apiName": "prompt_template__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "gatewayRequestId__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "prompt_template",
+                        "fieldRole": "DIMENSION",
+                        "formula": "GenAIGatewayRequest__dlm.promptTemplateDevName__c"
+                    }
+                ],
+                "displayName": "Prompt Template Generation Count",
+                "expression": "SELECT GenAIGatewayRequest__dlm.promptTemplateDevName__c AS prompt_template__c, COUNT(GenAIGatewayRequest__dlm.gatewayRequestId__c) AS generation_count__c\nFROM GenAIGatewayRequest__dlm\nWHERE GenAIGatewayRequest__dlm.promptTemplateDevName__c  IS NOT NULL\nGROUP BY GenAIGatewayRequest__dlm.promptTemplateDevName__c",
+                "isEnabled": true,
+                "lastCalcInsightStatusDateTime": "2025-09-23T20:53:31.000Z",
+                "lastCalcInsightStatusErrorCode": null,
+                "lastRunDateTime": "2026-04-02T18:11:46.000Z",
+                "lastRunStatus": "SUCCESS",
+                "lastRunStatusDateTime": "2026-04-02T18:13:42.000Z",
+                "lastRunStatusErrorCode": null,
+                "measures": [
+                    {
+                        "apiName": "generation_count__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "gatewayRequestId__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Number",
+                        "displayName": "generation_count",
+                        "fieldAggregationType": "AGGREGATABLE",
+                        "fieldRole": "MEASURE",
+                        "formula": "COUNT(GenAIGatewayRequest__dlm.gatewayRequestId__c)"
+                    }
+                ],
+                "publishScheduleEndDate": null,
+                "publishScheduleInterval": "ONE",
+                "publishScheduleStartDateTime": "2025-09-24T01:00"
+            },
+            {
+                "apiName": "ccr_first_pass_claims_V1__cio",
+                "calculatedInsightStatus": "ACTIVE",
+                "creationType": "Custom",
+                "dataSpace": "default",
+                "definitionStatus": "IN_USE",
+                "definitionType": "CALCULATED_METRIC",
+                "description": null,
+                "dimensions": [
+                    {
+                        "apiName": "id__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "claimid__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "id",
+                        "fieldRole": "DIMENSION",
+                        "formula": "amd_pm_vw_odbc_actv_claimsubmission__dlm.claimid__c"
+                    }
+                ],
+                "displayName": "ccr_first_pass_claims_V1",
+                "expression": "SELECT amd_pm_vw_odbc_actv_claimsubmission__dlm.claimid__c as id__c ,  sum(amd_pm_vw_odbc_actv_claimsubmission__dlm.totalamount__c) as claim_count__c\nFROM amd_pm_vw_odbc_actv_claimsubmission__dlm\nLEFT JOIN (\nSELECT\namd_pm_vw_odbc_actv_claimsubmission__dlm.claimid__c as id__c,\nREGEXP_EXTRACT(amd_pm_vw_odbc_actv_claimsubmission__dlm.claimid__c,&#39;([0-9]+)&#39;, 1) AS prefix__c\nFROM\namd_pm_vw_odbc_actv_claimsubmission__dlm\nWHERE REGEXP_EXTRACT(amd_pm_vw_odbc_actv_claimsubmission__dlm.claimid__c,&#39;([A-Z]+)&#39;, 1)  NOT IN (&#39;A&#39;)\n) b\nON REGEXP_EXTRACT(amd_pm_vw_odbc_actv_claimsubmission__dlm.claimid__c,&#39;([0-9]+)&#39;, 1) = b.prefix__c\nWHERE b.id__c IS NULL\nGROUP BY amd_pm_vw_odbc_actv_claimsubmission__dlm.claimid__c",
+                "isEnabled": true,
+                "lastCalcInsightStatusDateTime": "2025-11-10T05:07:36.000Z",
+                "lastCalcInsightStatusErrorCode": null,
+                "lastRunDateTime": "2026-03-12T16:55:45.000Z",
+                "lastRunStatus": "SUCCESS",
+                "lastRunStatusDateTime": "2026-03-12T17:05:42.000Z",
+                "lastRunStatusErrorCode": null,
+                "measures": [
+                    {
+                        "apiName": "claim_count__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "claimid__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Number",
+                        "displayName": "claim_count",
+                        "fieldAggregationType": "AGGREGATABLE",
+                        "fieldRole": "MEASURE",
+                        "formula": "sum(amd_pm_vw_odbc_actv_claimsubmission__dlm.totalamount__c)"
+                    }
+                ],
+                "publishScheduleEndDate": null,
+                "publishScheduleInterval": "NOT_SCHEDULED",
+                "publishScheduleStartDateTime": null
+            },
+            {
+                "apiName": "REFERRING_PROVIDERS_VENOUS_DISEASE__cio",
+                "calculatedInsightStatus": "ACTIVE",
+                "creationType": "Custom",
+                "dataSpace": "default",
+                "definitionStatus": "IN_USE",
+                "definitionType": "CALCULATED_METRIC",
+                "description": null,
+                "dimensions": [
+                    {
+                        "apiName": "referring_provider__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "DiagnosisCode__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "Referring Provider",
+                        "fieldRole": "DIMENSION",
+                        "formula": "ssot__AccountContact__dlm.EHR_Referral_Source_Contact__c"
+                    }
+                ],
+                "displayName": "REFERRING_PROVIDERS_VENOUS_DISEASE",
+                "expression": "SELECT\n  COUNT( CASE  WHEN (amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c contains &#39;I83&#39;) THEN &#39;1&#39; ELSE &#39;0&#39; END) AS venouspatients__c,\n  ssot__AccountContact__dlm.EHR_Referral_Source_Contact__c AS referring_provider__c\nFROM UnifiedIndividual__dlm\n  LEFT OUTER JOIN IndividualIdentityLink__dlm\n    ON (UnifiedIndividual__dlm.ssot__Id__c = IndividualIdentityLink__dlm.UnifiedRecordId__c)\n  LEFT OUTER JOIN ssot__Individual__dlm\n    ON (IndividualIdentityLink__dlm.SourceRecordId__c = ssot__Individual__dlm.ssot__Id__c AND IndividualIdentityLink__dlm.KQ_SourceRecordId__c = ssot__Individual__dlm.KQ_Id__c)\n  LEFT OUTER JOIN ssot__AccountContact__dlm\n    ON (ssot__Individual__dlm.ssot__Id__c = ssot__AccountContact__dlm.ssot__Id__c AND ssot__Individual__dlm.KQ_Id__c = ssot__AccountContact__dlm.KQ_Id__c)\n  LEFT OUTER JOIN (SELECT ssot__AccountContact__dlm.ssot__Id__c AS ssot__Id__c, ssot__AccountContact__dlm.KQ_Id__c AS KQ_Id__c FROM ssot__AccountContact__dlm) load_data_source4\n    ON (ssot__AccountContact__dlm.EHR_Referral_Source_Contact__c = load_data_source4.ssot__Id__c AND ssot__AccountContact__dlm.KQ_EHR_Referral_Source_Contact__c = load_data_source4.KQ_Id__c)\n  LEFT OUTER JOIN amd_odbc_ehr_itemdiagnosis__dlm\n    ON (ssot__Individual__dlm.ssot__Id__c = amd_odbc_ehr_itemdiagnosis__dlm.PatientID__c)\nGROUP BY referring_provider__c",
+                "isEnabled": true,
+                "lastCalcInsightStatusDateTime": "2026-02-06T18:01:33.000Z",
+                "lastCalcInsightStatusErrorCode": null,
+                "lastRunDateTime": "2026-02-06T18:06:29.000Z",
+                "lastRunStatus": "SUCCESS",
+                "lastRunStatusDateTime": "2026-02-06T18:07:09.000Z",
+                "lastRunStatusErrorCode": null,
+                "measures": [
+                    {
+                        "apiName": "venouspatients__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "DiagnosisCode__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Number",
+                        "displayName": "VenousPatients",
+                        "fieldAggregationType": "AGGREGATABLE",
+                        "fieldRole": "MEASURE",
+                        "formula": "COUNT( CASE  WHEN (amd_odbc_ehr_itemdiagnosis__dlm.DiagnosisCode__c RLIKE &#39;I83&#39;) THEN &#39;1&#39; ELSE &#39;0&#39; END)"
+                    }
+                ],
+                "publishScheduleEndDate": null,
+                "publishScheduleInterval": "NOT_SCHEDULED",
+                "publishScheduleStartDateTime": null
+            },
+            {
+                "apiName": "CI_Provider_ReferredVenousPatients_v3__cio",
+                "calculatedInsightStatus": "ACTIVE",
+                "creationType": "Custom",
+                "dataSpace": "default",
+                "definitionStatus": "IN_USE",
+                "definitionType": "CALCULATED_METRIC",
+                "description": null,
+                "dimensions": [
+                    {
+                        "apiName": "last_name__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "EHR_Referral_Source_Contact__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "last_name",
+                        "fieldRole": "DIMENSION",
+                        "formula": "ssot__Individual__dlm.ssot__LastName__c"
+                    },
+                    {
+                        "apiName": "individual__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "EHR_Referral_Source_Contact__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "Individual",
+                        "fieldRole": "DIMENSION",
+                        "formula": "ssot__Individual__dlm.ssot__Id__c"
+                    },
+                    {
+                        "apiName": "first_name__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "EHR_Referral_Source_Contact__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "first_name",
+                        "fieldRole": "DIMENSION",
+                        "formula": "ssot__Individual__dlm.ssot__FirstName__c"
+                    }
+                ],
+                "displayName": "CI_Provider_ReferredVenousPatients_v3",
+                "expression": "SELECT\n  COUNT(ssot__AccountContact__dlm.Contact__c) AS referring_provider__c,\n  ssot__Individual__dlm.ssot__Id__c AS individual__c,\n  ssot__Individual__dlm.ssot__FirstName__c AS first_name__c,\n  ssot__Individual__dlm.ssot__LastName__c AS last_name__c\nFROM ssot__AccountContact__dlm\n  JOIN ssot__Individual__dlm\n    ON (ssot__AccountContact__dlm.EHR_Referral_Source_Contact__c = ssot__Individual__dlm.ssot__Id__c)\nGROUP BY\n  individual__c,\n  first_name__c,\n  last_name__c",
+                "isEnabled": true,
+                "lastCalcInsightStatusDateTime": "2026-02-09T17:49:53.000Z",
+                "lastCalcInsightStatusErrorCode": null,
+                "lastRunDateTime": "2026-02-09T17:51:52.000Z",
+                "lastRunStatus": "SUCCESS",
+                "lastRunStatusDateTime": "2026-02-09T17:53:51.000Z",
+                "lastRunStatusErrorCode": null,
+                "measures": [
+                    {
+                        "apiName": "referring_provider__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "EHR_Referral_Source_Contact__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Number",
+                        "displayName": "Referring Provider",
+                        "fieldAggregationType": "AGGREGATABLE",
+                        "fieldRole": "MEASURE",
+                        "formula": "COUNT(ssot__AccountContact__dlm.Contact__c)"
+                    }
+                ],
+                "publishScheduleEndDate": null,
+                "publishScheduleInterval": "NOT_SCHEDULED",
+                "publishScheduleStartDateTime": null
+            },
+            {
+                "apiName": "ccr_unique_claims__cio",
+                "calculatedInsightStatus": "ACTIVE",
+                "creationType": "Custom",
+                "dataSpace": "default",
+                "definitionStatus": "IN_USE",
+                "definitionType": "CALCULATED_METRIC",
+                "description": null,
+                "dimensions": [
+                    {
+                        "apiName": "dso__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "claimid__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Text",
+                        "dateGranularity": null,
+                        "displayName": "dso",
+                        "fieldRole": "DIMENSION",
+                        "formula": "amd_pm_vw_odbc_actv_claimsubmission__dlm.DataSourceObject__c"
+                    }
+                ],
+                "displayName": "ccr_unique_claims",
+                "expression": "SELECT amd_pm_vw_odbc_actv_claimsubmission__dlm.DataSourceObject__c as dso__c, APPROX_COUNT_DISTINCT( REGEXP_EXTRACT(amd_pm_vw_odbc_actv_claimsubmission__dlm.claimid__c,&#39;([0-9]+)&#39;, 1) ) as claim_count__c\nFROM amd_pm_vw_odbc_actv_claimsubmission__dlm\nGROUP BY amd_pm_vw_odbc_actv_claimsubmission__dlm.DataSourceObject__c",
+                "isEnabled": true,
+                "lastCalcInsightStatusDateTime": "2025-11-09T07:43:28.000Z",
+                "lastCalcInsightStatusErrorCode": null,
+                "lastRunDateTime": "2025-11-09T07:44:37.000Z",
+                "lastRunStatus": "SUCCESS",
+                "lastRunStatusDateTime": "2025-11-09T07:45:13.000Z",
+                "lastRunStatusErrorCode": null,
+                "measures": [
+                    {
+                        "apiName": "claim_count__c",
+                        "creationType": "Custom",
+                        "dataSource": {
+                            "sourceApiName": "claimid__c",
+                            "type": "DATA_MODEL"
+                        },
+                        "dataType": "Number",
+                        "displayName": "claim_count",
+                        "fieldAggregationType": "NONAGGREGATABLE",
+                        "fieldRole": "MEASURE",
+                        "formula": "APPROX_COUNT_DISTINCT( REGEXP_EXTRACT(amd_pm_vw_odbc_actv_claimsubmission__dlm.claimid__c,&#39;([0-9]+)&#39;, 1) )"
+                    }
+                ],
+                "publishScheduleEndDate": null,
+                "publishScheduleInterval": "NOT_SCHEDULED",
+                "publishScheduleStartDateTime": null
+            }
+        ],
+        "nextPageToken": null,
+        "nextPageUrl": null,
+        "previousPageToken": null,
+        "previousPageUrl": null,
+        "total": 18
+    }
+}

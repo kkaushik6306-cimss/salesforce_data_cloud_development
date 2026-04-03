@@ -1,0 +1,1957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Data Streams Extractor — Configure</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --green-dark:   #166534;
+      --green-main:   #16a34a;
+      --green-light:  #bbf7d0;
+      --green-bg:     #f0fdf4;
+      --green-border: #86efac;
+    }
+    * { font-family: 'Inter', sans-serif; }
+    body {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      min-height: 100vh;
+      padding: 2.5rem 1rem;
+    }
+
+    /* ── Main card ── */
+    .config-card {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 10px 48px rgba(22,163,74,.13), 0 2px 12px rgba(0,0,0,.06);
+      border: 1px solid var(--green-border);
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+
+    /* ── Card header band ── */
+    .card-header-band {
+      background: linear-gradient(135deg, var(--green-dark) 0%, #14532d 100%);
+      padding: 1.75rem 2rem 1.5rem;
+      color: #fff;
+      position: relative;
+    }
+    .card-header-band .logo-ring {
+      width: 52px; height: 52px;
+      background: rgba(255,255,255,.12);
+      border: 1.5px solid rgba(255,255,255,.25);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: .85rem;
+    }
+    .card-header-band .logo-ring svg { width: 26px; height: 26px; color: #fff; }
+    .card-header-band h1 { font-size: 1.3rem; font-weight: 700; margin: 0 0 .2rem; }
+    .card-header-band p  { font-size: .82rem; color: rgba(255,255,255,.7); margin: 0; }
+    .header-actions {
+      position: absolute; top: 1.25rem; right: 1.5rem;
+      display: flex; align-items: center; gap: .75rem;
+    }
+    .dashboard-btn {
+      display: inline-flex; align-items: center; gap: .35rem;
+      font-size: .76rem; color: rgba(255,255,255,.75);
+      text-decoration: none; font-weight: 600;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 20px;
+      padding: .28rem .75rem;
+      transition: background .2s, color .2s;
+    }
+    .dashboard-btn:hover { background: rgba(255,255,255,.22); color: #fff; }
+    .dashboard-btn svg   { width: 13px; height: 13px; }
+    .signout-link {
+      font-size: .78rem; color: rgba(255,255,255,.6);
+      text-decoration: none; font-weight: 500;
+      transition: color .2s;
+    }
+    .signout-link:hover { color: #fff; }
+
+    /* ── Step bar ── */
+    .step-bar {
+      display: flex; align-items: center;
+      background: rgba(255,255,255,.08);
+      border-radius: 8px;
+      padding: .55rem .9rem;
+      margin-top: 1.1rem;
+      gap: 0;
+    }
+    .step-item {
+      display: flex; align-items: center; gap: .45rem;
+      font-size: .75rem; font-weight: 600;
+      color: rgba(255,255,255,.45);
+      flex: 1;
+    }
+    .step-item.done  { color: var(--green-light); }
+    .step-item.active{ color: #fff; }
+    .step-circle {
+      width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .7rem; font-weight: 700; flex-shrink: 0;
+      background: rgba(255,255,255,.15);
+      border: 1.5px solid rgba(255,255,255,.2);
+    }
+    .step-item.done  .step-circle { background: var(--green-main); border-color: var(--green-main); color: #fff; }
+    .step-item.active .step-circle { background: #fff; border-color: #fff; color: var(--green-dark); }
+    .step-connector {
+      flex: 0 0 24px; height: 1px;
+      background: rgba(255,255,255,.2);
+      margin: 0 .3rem;
+    }
+
+    /* ── Card body ── */
+    .card-body-pad { padding: 1.75rem 2rem 2rem; }
+
+    /* ── Section label ── */
+    .section-label {
+      display: flex; align-items: center; gap: .5rem;
+      font-size: .72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: #9ca3af;
+      margin-bottom: .85rem;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 1px; background: #f3f4f6;
+    }
+    .section-num {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--green-bg);
+      border: 1.5px solid var(--green-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .65rem; font-weight: 700; color: var(--green-dark);
+      flex-shrink: 0;
+    }
+
+    /* ── Inputs ── */
+    .form-label { font-weight: 600; color: #374151; font-size: .82rem; margin-bottom: .3rem; }
+    .input-wrap { position: relative; }
+    .input-icon {
+      position: absolute; left: .72rem; top: 50%;
+      transform: translateY(-50%);
+      width: 16px; height: 16px; color: #9ca3af; pointer-events: none;
+    }
+    .form-control {
+      border: 1.5px solid #e5e7eb;
+      border-radius: 9px;
+      padding: .58rem .85rem .58rem 2.25rem;
+      font-size: .875rem;
+      transition: border-color .2s, box-shadow .2s;
+      background: #fafafa;
+    }
+    .form-control:focus {
+      border-color: var(--green-main);
+      box-shadow: 0 0 0 3px rgba(22,163,74,.12);
+      background: #fff;
+      outline: none;
+    }
+    .form-hint { font-size: .75rem; color: #b0b7c3; margin-top: .25rem; }
+
+    /* ── Action cards (radio) ── */
+    .action-cards { display: flex; flex-direction: column; gap: .65rem; }
+    .action-card-wrap input[type="radio"] { display: none; }
+    .action-card-wrap label {
+      display: flex; align-items: center; gap: 1rem;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      padding: .9rem 1.1rem;
+      cursor: pointer;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+      background: #fafafa;
+    }
+    .action-card-wrap label:hover {
+      border-color: var(--green-border);
+      background: var(--green-bg);
+    }
+    .action-card-wrap input[type="radio"]:checked + label {
+      border-color: var(--green-main);
+      background: var(--green-bg);
+      box-shadow: 0 0 0 3px rgba(22,163,74,.1);
+    }
+    .action-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: #f3f4f6;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: background .2s;
+    }
+    .action-card-wrap input[type="radio"]:checked + label .action-icon {
+      background: var(--green-light);
+    }
+    .action-icon svg { width: 20px; height: 20px; color: #6b7280; }
+    .action-card-wrap input[type="radio"]:checked + label .action-icon svg {
+      color: var(--green-dark);
+    }
+    .action-text { flex: 1; }
+    .action-name { font-weight: 600; font-size: .9rem; color: #111827; }
+    .action-desc { font-size: .76rem; color: #9ca3af; margin-top: .1rem; }
+    .action-card-wrap input[type="radio"]:checked + label .action-name { color: var(--green-dark); }
+    .radio-dot {
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 2px solid #d1d5db;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: border-color .2s;
+    }
+    .radio-dot::after {
+      content: ''; width: 8px; height: 8px; border-radius: 50%;
+      background: transparent; transition: background .2s;
+    }
+    .action-card-wrap input[type="radio"]:checked + label .radio-dot {
+      border-color: var(--green-main);
+    }
+    .action-card-wrap input[type="radio"]:checked + label .radio-dot::after {
+      background: var(--green-main);
+    }
+
+    /* ── Category cards (3-col grid) ── */
+    .category-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: .65rem;
+    }
+    .cat-card-wrap input[type="radio"] { display: none; }
+    .cat-card-wrap label {
+      display: flex; flex-direction: column; align-items: center;
+      gap: .5rem; text-align: center;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1rem .85rem;
+      cursor: pointer;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+      background: #fafafa;
+      height: 100%;
+    }
+    .cat-card-wrap label:hover {
+      border-color: var(--green-border);
+      background: var(--green-bg);
+    }
+    .cat-card-wrap input[type="radio"]:checked + label {
+      border-color: var(--green-main);
+      background: var(--green-bg);
+      box-shadow: 0 0 0 3px rgba(22,163,74,.1);
+    }
+    .cat-icon {
+      width: 38px; height: 38px; border-radius: 9px;
+      background: #f3f4f6;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s;
+    }
+    .cat-card-wrap input[type="radio"]:checked + label .cat-icon {
+      background: var(--green-light);
+    }
+    .cat-icon svg { width: 19px; height: 19px; color: #6b7280; transition: color .2s; }
+    .cat-card-wrap input[type="radio"]:checked + label .cat-icon svg { color: var(--green-dark); }
+    .cat-name { font-weight: 600; font-size: .85rem; color: #111827; }
+    .cat-card-wrap input[type="radio"]:checked + label .cat-name { color: var(--green-dark); }
+    .cat-desc { font-size: .72rem; color: #9ca3af; line-height: 1.4; }
+
+    /* ── Object type cards (2×2 grid) ── */
+    .object-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .65rem;
+    }
+    .obj-card-wrap input[type="radio"] { display: none; }
+    .obj-card-wrap label {
+      display: flex; flex-direction: column; gap: .5rem;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+      cursor: pointer;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+      background: #fafafa;
+      height: 100%;
+    }
+    .obj-card-wrap label:hover {
+      border-color: var(--green-border);
+      background: var(--green-bg);
+    }
+    .obj-card-wrap input[type="radio"]:checked + label {
+      border-color: var(--green-main);
+      background: var(--green-bg);
+      box-shadow: 0 0 0 3px rgba(22,163,74,.1);
+    }
+    .obj-icon {
+      width: 38px; height: 38px; border-radius: 9px;
+      background: #f3f4f6;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s;
+    }
+    .obj-card-wrap input[type="radio"]:checked + label .obj-icon {
+      background: var(--green-light);
+    }
+    .obj-icon svg { width: 19px; height: 19px; color: #6b7280; transition: color .2s; }
+    .obj-card-wrap input[type="radio"]:checked + label .obj-icon svg { color: var(--green-dark); }
+    .obj-name { font-weight: 600; font-size: .85rem; color: #111827; }
+    .obj-card-wrap input[type="radio"]:checked + label .obj-name { color: var(--green-dark); }
+    .obj-desc { font-size: .73rem; color: #9ca3af; line-height: 1.4; }
+    .obj-check {
+      margin-left: auto; align-self: flex-start;
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid #d1d5db;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color .2s, background .2s;
+      flex-shrink: 0;
+    }
+    .obj-check::after {
+      content: ''; width: 7px; height: 7px; border-radius: 50%;
+      background: transparent; transition: background .2s;
+    }
+    .obj-card-wrap input[type="radio"]:checked + label .obj-check {
+      border-color: var(--green-main);
+    }
+    .obj-card-wrap input[type="radio"]:checked + label .obj-check::after {
+      background: var(--green-main);
+    }
+    .obj-header { display: flex; align-items: flex-start; justify-content: space-between; }
+
+    /* ── Submit button ── */
+    .btn-submit {
+      background: var(--green-main); color: #fff; border: none;
+      border-radius: 10px; padding: .78rem 1.5rem;
+      font-weight: 700; font-size: .95rem; width: 100%;
+      transition: background .2s, transform .1s;
+      letter-spacing: .01em;
+    }
+    .btn-submit:hover  { background: var(--green-dark); color: #fff; }
+    .btn-submit:active { transform: scale(.985); }
+
+    /* ── Alerts ── */
+    .alert { border-radius: 9px; font-size: .875rem; }
+    .alert-danger  { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+    .alert-warning { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+
+    /* ── Page width override for second section ── */
+    .config-card { max-width: 780px; }
+
+    /* ── Card main body wrapper ── */
+    .card-main-body { padding: 1.6rem 2rem 2rem; }
+
+    /* ── AWS Credentials block (above actions) ── */
+    .aws-creds-block {
+      border: 1.5px solid #e5e7eb;
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    .aws-creds-head {
+      display: flex; align-items: center; gap: .65rem;
+      background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+      border-bottom: 1.5px solid #e5e7eb;
+      padding: .75rem 1.25rem;
+    }
+    .aws-creds-head-icon {
+      width: 28px; height: 28px; border-radius: 7px;
+      background: #fef3c7; border: 1px solid #fde68a;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .aws-creds-head-icon svg { width: 15px; height: 15px; color: #92400e; }
+    .aws-creds-head-title { font-size: .84rem; font-weight: 700; color: #374151; }
+    .aws-creds-head-sub   { font-size: .7rem; color: #9ca3af; margin-left: auto; }
+    .aws-creds-body { padding: 1.1rem 1.25rem 1.25rem; }
+
+    /* ── Password toggle (for secret name) ── */
+    .input-wrap { position: relative; }
+    .pw-toggle {
+      position: absolute; right: .65rem; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      padding: .2rem; color: #9ca3af;
+      display: flex; align-items: center; justify-content: center;
+      transition: color .15s;
+    }
+    .pw-toggle:hover { color: #374151; }
+    .pw-toggle svg   { width: 16px; height: 16px; pointer-events: none; }
+    /* push text away from the eye icon */
+    .has-pw-toggle { padding-right: 2.4rem !important; }
+
+    /* ── Actions List container ── */
+    .actions-list {
+      border: 1.5px solid #e5e7eb;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .actions-list-head {
+      display: flex; align-items: center; justify-content: space-between;
+      background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+      border-bottom: 1.5px solid #e5e7eb;
+      padding: .85rem 1.25rem;
+    }
+    .actions-list-head-left { display: flex; align-items: center; gap: .7rem; }
+    .actions-list-icon {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: var(--green-dark);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .actions-list-icon svg { width: 16px; height: 16px; color: #fff; }
+    .actions-list-title { font-size: .88rem; font-weight: 700; color: #111827; }
+    .actions-list-sub   { font-size: .7rem; color: #9ca3af; margin-top: .05rem; }
+    .actions-list-count {
+      font-size: .69rem; font-weight: 700;
+      background: var(--green-bg); border: 1px solid var(--green-border);
+      color: var(--green-dark); border-radius: 20px; padding: .18rem .65rem;
+    }
+    .actions-list-head-right { display: flex; align-items: center; gap: .6rem; }
+    .expand-all-btn {
+      display: inline-flex; align-items: center; gap: .35rem;
+      font-size: .72rem; font-weight: 600; color: #6b7280;
+      background: #fff; border: 1.5px solid #e5e7eb;
+      border-radius: 8px; padding: .3rem .75rem;
+      cursor: pointer; transition: all .18s;
+      white-space: nowrap;
+    }
+    .expand-all-btn svg { width: 13px; height: 13px; transition: transform .22s; }
+    .expand-all-btn:hover { background: var(--green-bg); color: var(--green-dark); border-color: var(--green-border); }
+    .expand-all-btn.all-open svg { transform: rotate(180deg); }
+    .expand-all-btn.all-open { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+
+    /* ── Action accordion item ── */
+    .action-item { border-top: 1px solid #e5e7eb; }
+    .action-item:first-of-type { border-top: none; }
+
+    .action-summary {
+      display: flex; align-items: center; gap: .85rem;
+      padding: .95rem 1.25rem;
+      cursor: pointer; user-select: none; list-style: none;
+      transition: background .18s;
+    }
+    .action-summary::-webkit-details-marker { display: none; }
+    .action-summary:hover { background: #f9fafb; }
+
+    .action-sum-left  { display: flex; align-items: center; gap: .85rem; flex: 1; min-width: 0; }
+    .action-sum-right { display: flex; align-items: center; gap: .5rem; flex-shrink: 0; }
+    .action-sum-title { font-size: .88rem; font-weight: 700; color: #111827; }
+    .action-sum-sub   { font-size: .72rem; color: #9ca3af; margin-top: .1rem; line-height: 1.3; }
+
+    /* chevron / expand-btn states per action-item */
+    .action-item[open] .action-summary .collapse-expand-btn svg { transform: rotate(180deg); }
+    .action-item[open] .action-summary:hover .collapse-expand-btn {
+      background: #fee2e2; color: #dc2626; border-color: #fca5a5;
+    }
+    .action-item[open] .action-summary .collapse-expand-btn .expand-label::before  { content: 'Collapse'; }
+    .action-item:not([open]) .action-summary .collapse-expand-btn .expand-label::before { content: 'Expand'; }
+
+    .action-body {
+      padding: 1.25rem 1.5rem 1.5rem;
+      border-top: 1px solid #f1f5f9;
+      background: #fdfdfd;
+      animation: slideDown .22s ease;
+    }
+
+    /* icon reuse */
+    .section-block-icon {
+      width: 36px; height: 36px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .section-block-icon.fetch   { background: var(--green-bg);  border: 1.5px solid var(--green-border); }
+    .section-block-icon.create  { background: #eff6ff;           border: 1.5px solid #bfdbfe; }
+    .section-block-icon.delete  { background: #fff1f2;           border: 1.5px solid #fecdd3; }
+    .section-block-icon.tableau { background: #f5f3ff;           border: 1.5px solid #ddd6fe; }
+    .section-block-icon.fetch   svg { color: var(--green-dark); width: 19px; height: 19px; }
+    .section-block-icon.create  svg { color: #1d4ed8;           width: 19px; height: 19px; }
+    .section-block-icon.delete  svg { color: #e11d48;           width: 19px; height: 19px; }
+    .section-block-icon.tableau svg { color: #7c3aed;           width: 19px; height: 19px; }
+
+    .collapse-tag.tableau { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
+
+    /* ── Tableau under-development banner ── */
+    .tableau-coming-soon {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 1rem; padding: 2.2rem 1.5rem; text-align: center;
+    }
+    .tableau-cs-icon {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: #f5f3ff; border: 2px solid #ddd6fe;
+      display: flex; align-items: center; justify-content: center;
+      color: #7c3aed;
+    }
+    .tableau-cs-icon svg { width: 26px; height: 26px; }
+    .tableau-cs-title {
+      font-size: .92rem; font-weight: 800; color: #4c1d95;
+      margin-bottom: .3rem;
+    }
+    .tableau-cs-msg {
+      font-size: .78rem; color: #6d28d9; line-height: 1.55; max-width: 340px;
+    }
+    .tableau-cs-badge {
+      display: inline-flex; align-items: center; gap: .4rem;
+      font-size: .7rem; font-weight: 700;
+      background: #f5f3ff; border: 1.5px solid #ddd6fe;
+      color: #7c3aed; border-radius: 20px; padding: .3rem .85rem;
+    }
+    .tableau-cs-badge svg { width: 12px; height: 12px; }
+
+    /* ── Delete Stream specific ── */
+    .collapse-tag.del { background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; }
+    .stream-name-wrap { position: relative; }
+    .stream-name-wrap .field-icon {
+      position: absolute; left: .85rem; top: 50%; transform: translateY(-50%);
+      width: 16px; height: 16px; color: #9ca3af; pointer-events: none;
+    }
+    .stream-name-input {
+      width: 100%; padding: .62rem .85rem .62rem 2.35rem;
+      border: 1.5px solid #e5e7eb; border-radius: 9px;
+      font-size: .82rem; color: #111827; background: #fafafa;
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .stream-name-input:focus {
+      outline: none;
+      border-color: #e11d48;
+      box-shadow: 0 0 0 3px rgba(225,29,72,.1);
+    }
+    .stream-name-input::placeholder { color: #9ca3af; }
+    .dlo-toggle-row {
+      display: flex; align-items: flex-start; gap: .85rem;
+      background: #fff8f8; border: 1.5px solid #fecdd3;
+      border-radius: 10px; padding: .85rem 1rem;
+      cursor: pointer; transition: background .15s, border-color .15s;
+    }
+    .dlo-toggle-row:hover { background: #fff1f2; }
+    .dlo-toggle-wrap { position: relative; width: 36px; height: 20px; flex-shrink: 0; margin-top: .1rem; }
+    .dlo-toggle-wrap input[type="checkbox"] { opacity: 0; width: 0; height: 0; }
+    .dlo-toggle-slider {
+      position: absolute; inset: 0;
+      background: #d1d5db; border-radius: 20px;
+      cursor: pointer; transition: background .2s;
+    }
+    .dlo-toggle-slider::before {
+      content: ''; position: absolute;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: #fff; top: 3px; left: 3px;
+      transition: transform .2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+    .dlo-toggle-wrap input:checked + .dlo-toggle-slider { background: #e11d48; }
+    .dlo-toggle-wrap input:checked + .dlo-toggle-slider::before { transform: translateX(16px); }
+    .dlo-toggle-text-head { font-size: .81rem; font-weight: 700; color: #9f1239; }
+    .dlo-toggle-text-sub  { font-size: .73rem; color: #be123c; margin-top: .15rem; line-height: 1.4; }
+    .dlo-toggle-badge {
+      margin-left: auto; flex-shrink: 0;
+      font-size: .65rem; font-weight: 700; padding: .15rem .5rem;
+      background: #fecdd3; color: #9f1239; border-radius: 20px;
+      white-space: nowrap; align-self: flex-start;
+    }
+    .btn-delete-stream {
+      width: 100%; padding: .78rem 1.5rem;
+      background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+      color: #fff; border: none; border-radius: 10px;
+      font-size: .84rem; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: .6rem;
+      transition: opacity .18s, transform .15s;
+      letter-spacing: .01em;
+    }
+    .btn-delete-stream:hover  { opacity: .9; }
+    .btn-delete-stream:active { transform: scale(.985); }
+    .btn-delete-stream svg { width: 17px; height: 17px; }
+    .delete-result-panel {
+      display: none; margin-top: 1.1rem;
+      border: 1.5px solid #e5e7eb; border-radius: 10px; overflow: hidden;
+    }
+    .delete-result-panel.visible { display: block; }
+    .delete-result-head {
+      background: #f9fafb; border-bottom: 1px solid #e5e7eb;
+      padding: .55rem 1rem;
+      font-size: .72rem; font-weight: 700; color: #374151;
+      display: flex; align-items: center; gap: .45rem;
+    }
+    .delete-result-body { padding: .85rem 1rem; }
+
+    /* ── Query config group box ── */
+    .query-group {
+      border: 1.5px solid #e5e7eb;
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 1.4rem;
+    }
+    .query-group summary {
+      display: flex; align-items: center; gap: .6rem;
+      background: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+      padding: .7rem 1.1rem;
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      transition: background .18s;
+    }
+    .query-group summary::-webkit-details-marker { display: none; }
+    .query-group summary:hover { background: #f3f4f6; }
+    .query-group-head-icon {
+      width: 26px; height: 26px; border-radius: 7px;
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .query-group-head-icon svg { width: 14px; height: 14px; color: var(--green-dark); }
+    .query-group-head-title    { font-size: .82rem; font-weight: 700; color: #374151; }
+    .query-group-head-sub      { font-size: .72rem; color: #9ca3af; }
+    .query-group-head-right    { display: flex; align-items: center; gap: .5rem; margin-left: auto; }
+    .query-group-body          { padding: 1.2rem 1.1rem; animation: slideDown .22s ease; }
+
+    /* Reuse collapse-expand-btn for query group */
+    .query-group[open] summary .collapse-expand-btn svg { transform: rotate(180deg); }
+    .query-group[open] summary:hover .collapse-expand-btn {
+      background: #fee2e2; color: #dc2626; border-color: #fca5a5;
+    }
+    .query-group[open] summary .collapse-expand-btn .expand-label::before { content: 'Collapse'; }
+    .query-group:not([open]) summary .collapse-expand-btn .expand-label::before { content: 'Expand'; }
+    .query-inner-sep {
+      height: 1px; background: #f3f4f6;
+      margin: 1.1rem 0;
+    }
+    .query-inner-label {
+      display: flex; align-items: center; gap: .45rem;
+      font-size: .69rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: #9ca3af;
+      margin-bottom: .75rem;
+    }
+    .query-inner-label::after {
+      content: ''; flex: 1; height: 1px; background: #f3f4f6;
+    }
+    .query-inner-num {
+      width: 17px; height: 17px; border-radius: 50%;
+      background: var(--green-bg);
+      border: 1.5px solid var(--green-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .62rem; font-weight: 700; color: var(--green-dark);
+      flex-shrink: 0;
+    }
+
+    .collapse-tag {
+      display: inline-flex; align-items: center; gap: .3rem;
+      font-size: .68rem; font-weight: 600;
+      border-radius: 20px; padding: .18rem .6rem;
+      white-space: nowrap;
+    }
+    .collapse-tag.ds  { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .collapse-tag.dlo { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .collapse-tag.dmo { background: #f5f3ff; color: #5b21b6; border: 1px solid #ddd6fe; }
+    .collapse-tag.ci  { background: #ecfeff; color: #155e75; border: 1px solid #a5f3fc; }
+
+    .collapse-expand-btn {
+      display: inline-flex; align-items: center; gap: .35rem;
+      font-size: .75rem; font-weight: 600; color: #6b7280;
+      background: #f3f4f6; border: 1px solid #e5e7eb;
+      border-radius: 20px; padding: .3rem .85rem;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+    .collapse-expand-btn svg {
+      width: 13px; height: 13px;
+      transition: transform .3s ease;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+
+    /* ── What-to-create pill tabs ── */
+    .create-tabs {
+      display: flex; gap: .5rem;
+      background: #f9fafb;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      padding: .35rem;
+      margin-bottom: 1.25rem;
+    }
+    .create-tab {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      gap: .4rem; font-size: .78rem; font-weight: 600;
+      color: #6b7280; border-radius: 8px;
+      padding: .5rem .6rem; cursor: pointer;
+      transition: background .18s, color .18s, box-shadow .18s;
+      user-select: none;
+    }
+    .create-tab input[type="checkbox"] { display: none; }
+    .create-tab.checked {
+      background: #fff;
+      color: var(--green-dark);
+      box-shadow: 0 1px 4px rgba(0,0,0,.09);
+      border: 1px solid var(--green-border);
+    }
+    .create-tab svg { width: 15px; height: 15px; flex-shrink: 0; }
+    .create-tab .tab-check {
+      width: 15px; height: 15px; border-radius: 50%;
+      border: 1.5px solid #d1d5db;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: background .15s, border-color .15s;
+    }
+    .create-tab.checked .tab-check {
+      background: var(--green-main); border-color: var(--green-main);
+    }
+    .create-tab.checked .tab-check::after {
+      content: '';
+      display: block; width: 5px; height: 5px;
+      border-radius: 50%; background: #fff;
+    }
+
+    /* ── Drop zone ── */
+    .drop-zone {
+      border: 2px dashed #d1d5db;
+      border-radius: 14px;
+      background: #fafafa;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      margin-bottom: 1.1rem;
+      position: relative;
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--green-main);
+      background: var(--green-bg);
+    }
+    .drop-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .drop-icon {
+      width: 46px; height: 46px; border-radius: 12px;
+      background: #f3f4f6; margin: 0 auto .75rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s;
+    }
+    .drop-zone:hover .drop-icon, .drop-zone.drag-over .drop-icon { background: var(--green-light); }
+    .drop-icon svg { width: 24px; height: 24px; color: #9ca3af; transition: color .2s; }
+    .drop-zone:hover .drop-icon svg, .drop-zone.drag-over .drop-icon svg { color: var(--green-dark); }
+    .drop-title { font-size: .9rem; font-weight: 600; color: #374151; margin-bottom: .25rem; }
+    .drop-sub   { font-size: .76rem; color: #9ca3af; }
+    .drop-sub span { color: var(--green-main); font-weight: 600; }
+
+    /* ── File preview card ── */
+    .file-preview {
+      display: none;
+      border: 1.5px solid var(--green-border);
+      border-radius: 12px;
+      background: var(--green-bg);
+      margin-bottom: 1.1rem;
+      overflow: hidden;
+    }
+    .file-preview.visible { display: block; }
+    .file-preview-head {
+      display: flex; align-items: center; gap: .75rem;
+      padding: .8rem 1.1rem;
+      border-bottom: 1px solid var(--green-border);
+      background: rgba(255,255,255,.55);
+    }
+    .file-type-badge {
+      font-size: .65rem; font-weight: 800; letter-spacing: .06em;
+      background: var(--green-main); color: #fff;
+      border-radius: 5px; padding: .18rem .45rem;
+    }
+    .file-name  { font-size: .84rem; font-weight: 600; color: #111827; flex: 1; }
+    .file-size  { font-size: .73rem; color: #9ca3af; }
+    .file-clear {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #fee2e2; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: background .15s;
+    }
+    .file-clear:hover { background: #fca5a5; }
+    .file-clear svg   { width: 12px; height: 12px; color: #dc2626; }
+
+    /* ── JSON preview code block ── */
+    .json-preview-wrap { padding: .7rem 1.1rem .9rem; }
+    .json-preview-label {
+      font-size: .68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: #9ca3af; margin-bottom: .45rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .json-code {
+      background: #1e293b;
+      border-radius: 8px;
+      padding: .85rem 1rem;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: .75rem;
+      line-height: 1.6;
+      color: #e2e8f0;
+      max-height: 160px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .json-code::-webkit-scrollbar { width: 4px; }
+    .json-code::-webkit-scrollbar-track { background: transparent; }
+    .json-code::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+
+    /* JSON syntax highlight */
+    .json-key   { color: #93c5fd; }
+    .json-str   { color: #86efac; }
+    .json-num   { color: #fde68a; }
+    .json-bool  { color: #f9a8d4; }
+    .json-null  { color: #94a3b8; }
+
+    /* ── Detected fields strip ── */
+    .detected-strip {
+      display: flex; flex-wrap: wrap; gap: .4rem;
+      padding: 0 1.1rem .85rem;
+    }
+    .det-badge {
+      font-size: .71rem; font-weight: 600;
+      background: #fff;
+      border: 1px solid var(--green-border);
+      color: var(--green-dark);
+      border-radius: 20px;
+      padding: .2rem .65rem;
+    }
+    .det-badge.warn {
+      background: #fffbeb; border-color: #fde68a; color: #92400e;
+    }
+
+    /* ── Validation row ── */
+    .validation-row {
+      display: none;
+      align-items: center; gap: .6rem;
+      padding: .55rem .85rem;
+      border-radius: 9px;
+      font-size: .8rem; font-weight: 500;
+      margin-bottom: 1rem;
+    }
+    .validation-row.valid   { display: flex; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .validation-row.invalid { display: flex; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .validation-row svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    /* ── Create button ── */
+    .btn-create {
+      background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-main) 100%);
+      color: #fff; border: none;
+      border-radius: 10px; padding: .78rem 1.5rem;
+      font-weight: 700; font-size: .95rem; width: 100%;
+      transition: opacity .2s, transform .1s;
+      letter-spacing: .01em;
+      display: flex; align-items: center; justify-content: center; gap: .6rem;
+    }
+    .btn-create:hover   { opacity: .9; color: #fff; }
+    .btn-create:active  { transform: scale(.985); }
+    .btn-create:disabled { opacity: .45; cursor: not-allowed; }
+    .btn-create svg     { width: 18px; height: 18px; }
+    .btn-create .btn-spinner {
+      display: none; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    .btn-create.loading .btn-spinner { display: inline-block; }
+    .btn-create.loading .btn-icon    { display: none; }
+
+    /* ── Coming-soon notice ── */
+    .coming-soon-notice {
+      display: flex; align-items: flex-start; gap: .9rem;
+      padding: 1rem 1.1rem;
+      background: #fffbeb;
+      border: 1.5px solid #fde68a;
+      border-radius: 10px;
+      margin: .1rem 0;
+    }
+    .csn-icon {
+      width: 36px; height: 36px; flex-shrink: 0;
+      background: #fef3c7; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #d97706;
+    }
+    .csn-icon svg { width: 18px; height: 18px; }
+    .csn-title { font-size: .82rem; font-weight: 700; color: #92400e; margin-bottom: .2rem; }
+    .csn-msg   { font-size: .77rem; color: #b45309; line-height: 1.45; }
+
+    /* ── Results panel ── */
+    .results-panel {
+      display: none;
+      margin-top: 1.1rem;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .results-panel.visible { display: block; }
+    .results-head {
+      background: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+      padding: .65rem 1.1rem;
+      font-size: .76rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .07em;
+      color: #6b7280;
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .result-row {
+      display: flex; align-items: center; gap: .85rem;
+      padding: .75rem 1.1rem;
+      border-bottom: 1px solid #f3f4f6;
+      font-size: .83rem;
+    }
+    .result-row:last-child { border-bottom: none; }
+    .result-icon {
+      width: 28px; height: 28px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .result-icon.pending  { background: #f1f5f9; }
+    .result-icon.running  { background: #dbeafe; }
+    .result-icon.success  { background: #dcfce7; }
+    .result-icon.error    { background: #fee2e2; }
+    .result-icon.skipped  { background: #f1f5f9; }
+    .result-icon svg      { width: 14px; height: 14px; }
+    .result-icon.pending svg  { color: #94a3b8; }
+    .result-icon.running svg  { color: #2563eb; animation: spin .7s linear infinite; }
+    .result-icon.success svg  { color: #16a34a; }
+    .result-icon.error svg    { color: #dc2626; }
+    .result-icon.skipped svg  { color: #94a3b8; }
+    .result-label { font-weight: 600; color: #111827; flex: 1; }
+    .result-status { font-size: .75rem; font-weight: 600; }
+    .result-status.pending  { color: #94a3b8; }
+    .result-status.running  { color: #2563eb; }
+    .result-status.success  { color: #16a34a; }
+    .result-status.error    { color: #dc2626; }
+    .result-status.skipped  { color: #94a3b8; }
+    .result-detail { font-size: .72rem; color: #9ca3af; margin-top: .1rem; }
+
+    /* ── Loading overlay ── */
+    #loading-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(240,253,244,.94);
+      backdrop-filter: blur(6px);
+      z-index: 9999;
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 1.5rem;
+    }
+    #loading-overlay.active { display: flex; }
+    .spinner {
+      width: 56px; height: 56px;
+      border: 4px solid var(--green-border);
+      border-top-color: var(--green-main);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-title { font-weight: 700; font-size: 1.1rem; color: var(--green-dark); }
+    .loading-step  { font-size: .875rem; color: #6b7280; }
+    .step-dots::after {
+      content: ''; animation: dots 1.5s steps(3, end) infinite;
+    }
+    @keyframes dots {
+      0%  { content: ''; } 33% { content: '.'; }
+      66% { content: '..'; } 100% { content: '...'; }
+    }
+  </style>
+</head>
+
+<!-- Loading overlay -->
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-title">Connecting to AWS</div>
+  <div class="loading-step" id="loading-step-text"><span class="step-dots"></span></div>
+</div>
+
+<body>
+<div class="config-card">
+
+  <!-- Header band -->
+  <div class="card-header-band">
+    <div class="header-actions">
+      <a href="/dashboard" target="_blank" class="dashboard-btn">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6z
+               M14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z
+               M4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z
+               M14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+        </svg>
+        Dashboard
+      </a>
+      <a href="/logout" class="signout-link">Sign out &#8594;</a>
+    </div>
+    <div class="logo-ring">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999
+             5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+      </svg>
+    </div>
+    <h1>Configure Connection</h1>
+    <p>Connect to AWS Secrets Manager and select your data operation</p>
+
+    <!-- Step bar -->
+    <div class="step-bar">
+      <div class="step-item done">
+        <div class="step-circle">&#10003;</div>
+        Sign In
+      </div>
+      <div class="step-connector"></div>
+      <div class="step-item active">
+        <div class="step-circle">2</div>
+        Configure
+      </div>
+      <div class="step-connector"></div>
+      <div class="step-item">
+        <div class="step-circle">3</div>
+        Results
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Actions List ══ -->
+  <div class="card-main-body">
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show py-2 mb-3" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="POST" action="/load-secret" autocomplete="off" id="aws-form">
+
+    <!-- ── AWS Credentials block (shared, above actions) ── -->
+    <div class="aws-creds-block">
+      <div class="aws-creds-head">
+        <div class="aws-creds-head-icon">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+        </div>
+        <span class="aws-creds-head-title">AWS Credentials</span>
+        <span class="aws-creds-head-sub">Required for all actions</span>
+      </div>
+      <div class="aws-creds-body">
+        <div class="row g-3">
+          <div class="col-md-7">
+            <label class="form-label" for="secret_name">Secret Name</label>
+            <div class="input-wrap">
+              <svg class="input-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+              <input type="password" id="secret_name" name="secret_name"
+                     class="form-control has-pw-toggle"
+                     placeholder="••••••••••••••••••••••"
+                     value="studycast-integration-access-secret" required autofocus/>
+              <button type="button" class="pw-toggle" id="secret-toggle"
+                      onclick="toggleSecret()" title="Show / hide secret name">
+                <svg id="secret-eye" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7
+                       -1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+              </button>
+            </div>
+            <div class="form-hint">Name or ARN stored in AWS Secrets Manager</div>
+          </div>
+          <div class="col-md-5">
+            <label class="form-label" for="region_name">AWS Region</label>
+            <div class="input-wrap">
+              <svg class="input-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9
+                     a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9
+                     m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+              </svg>
+              <input type="text" id="region_name" name="region_name" class="form-control"
+                     placeholder="us-east-1" value="us-east-1" required/>
+            </div>
+            <div class="form-hint">e.g. us-east-1, eu-west-1</div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /aws-creds-block -->
+
+    <div class="actions-list">
+
+      <!-- Actions List header -->
+      <div class="actions-list-head">
+        <div class="actions-list-head-left">
+          <div class="actions-list-icon">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="actions-list-title">Actions</div>
+            <div class="actions-list-sub">Select an action to get started</div>
+          </div>
+        </div>
+        <div class="actions-list-head-right">
+          <span class="actions-list-count">4 actions</span>
+          <button type="button" class="expand-all-btn" id="expand-all-btn" onclick="toggleAllActions()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+            <span id="expand-all-label">Expand All</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Action 1 : Fetch Data Schema ── -->
+      <details class="action-item">
+        <summary class="action-summary">
+          <div class="action-sum-left">
+            <div class="section-block-icon fetch">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7
+                     M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4
+                     M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4
+                     m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+              </svg>
+            </div>
+            <div>
+              <div class="action-sum-title">Fetch Data Schema</div>
+              <div class="action-sum-sub">Connect to AWS &amp; retrieve metadata from Salesforce Data Cloud</div>
+            </div>
+          </div>
+          <div class="action-sum-right">
+            <span class="collapse-expand-btn">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+              <span class="expand-label"></span>
+            </span>
+          </div>
+        </summary>
+
+        <div class="action-body">
+
+          <input type="hidden" name="action" value="get_data_schema"/>
+
+          <!-- 1 — Category -->
+          <div class="query-inner-label">
+            <div class="query-inner-num">1</div>
+            Select Category
+          </div>
+
+          <div class="category-grid">
+            <div class="cat-card-wrap">
+              <input type="radio" name="entity_category" id="cat_profile" value="Profile" checked/>
+              <label for="cat_profile">
+                <div class="cat-icon">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                  </svg>
+                </div>
+                <div class="cat-name">Profile</div>
+                <div class="cat-desc">Unified customer profile entities</div>
+              </label>
+            </div>
+            <div class="cat-card-wrap">
+              <input type="radio" name="entity_category" id="cat_engagement" value="Engagement"/>
+              <label for="cat_engagement">
+                <div class="cat-icon">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                  </svg>
+                </div>
+                <div class="cat-name">Engagement</div>
+                <div class="cat-desc">Interaction and activity data</div>
+              </label>
+            </div>
+            <div class="cat-card-wrap">
+              <input type="radio" name="entity_category" id="cat_related" value="Related"/>
+              <label for="cat_related">
+                <div class="cat-icon">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                  </svg>
+                </div>
+                <div class="cat-name">Related</div>
+                <div class="cat-desc">Associated and linked objects</div>
+              </label>
+            </div>
+          </div>
+
+          <div class="query-inner-sep"></div>
+
+          <!-- 2 — Object Type -->
+          <div class="query-inner-label">
+            <div class="query-inner-num">2</div>
+            Select Object Type
+          </div>
+
+          <div class="object-grid">
+            <div class="obj-card-wrap">
+              <input type="radio" name="object_type" id="obj_dlo" value="DataLakeObject" checked/>
+              <label for="obj_dlo">
+                <div class="obj-header">
+                  <div class="obj-icon">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2
+                           M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2
+                           m-5-4v.01M14 16v.01"/>
+                    </svg>
+                  </div>
+                  <div class="obj-check"></div>
+                </div>
+                <div class="obj-name">DataLakeObject</div>
+                <div class="obj-desc">Raw ingested data stored in the Data Cloud lake layer</div>
+              </label>
+            </div>
+            <div class="obj-card-wrap">
+              <input type="radio" name="object_type" id="obj_dmo" value="DataModelObject"/>
+              <label for="obj_dmo">
+                <div class="obj-header">
+                  <div class="obj-icon">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10
+                           a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10
+                           a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
+                    </svg>
+                  </div>
+                  <div class="obj-check"></div>
+                </div>
+                <div class="obj-name">DataModelObject</div>
+                <div class="obj-desc">Semantic data model objects and entity definitions</div>
+              </label>
+            </div>
+            <div class="obj-card-wrap">
+              <input type="radio" name="object_type" id="obj_ci" value="CalculatedInsights"/>
+              <label for="obj_ci">
+                <div class="obj-header">
+                  <div class="obj-icon">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0
+                           V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0
+                           V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                  </div>
+                  <div class="obj-check"></div>
+                </div>
+                <div class="obj-name">Calculated Insights</div>
+                <div class="obj-desc">Pre-computed metrics and aggregated insight objects</div>
+              </label>
+            </div>
+            <div class="obj-card-wrap">
+              <input type="radio" name="object_type" id="obj_prof" value="Profiles"/>
+              <label for="obj_prof">
+                <div class="obj-header">
+                  <div class="obj-icon">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857
+                           M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857
+                           m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                  </div>
+                  <div class="obj-check"></div>
+                </div>
+                <div class="obj-name">Profiles</div>
+                <div class="obj-desc">Unified customer profile objects and identity data</div>
+              </label>
+            </div>
+          </div><!-- /object-grid -->
+
+          <div class="query-inner-sep"></div>
+
+          <button type="submit" class="btn-submit">
+            Fetch Data &rarr;
+          </button>
+
+        </div><!-- /action-body fetch -->
+      </details><!-- /action-item fetch -->
+
+      <!-- ── Action 2 : Create Data Objects ── -->
+      <details class="action-item" id="create-details">
+        <summary class="action-summary">
+          <div class="action-sum-left">
+            <div class="section-block-icon create">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="action-sum-title">Create Data Objects</div>
+              <div class="action-sum-sub">Provision DS, DLO, DMO, or CI directly via JSON schema</div>
+            </div>
+          </div>
+          <div class="action-sum-right">
+            <span class="collapse-expand-btn">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+              <span class="expand-label"></span>
+            </span>
+          </div>
+        </summary>
+
+        <div class="action-body">
+
+    <!-- What to create — pill tabs -->
+    <div class="create-tabs" id="create-tabs">
+      <label class="create-tab checked" id="tab-ds">
+        <input type="radio" name="create_type" id="chk-ds" value="ds" checked onchange="syncTab(this,'tab-ds')"/>
+        <div class="tab-check"></div>
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+        Data Stream
+      </label>
+      <label class="create-tab" id="tab-dlo">
+        <input type="radio" name="create_type" id="chk-dlo" value="dlo" onchange="syncTab(this,'tab-dlo')"/>
+        <div class="tab-check"></div>
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2
+               M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/>
+        </svg>
+        DLO
+      </label>
+      <label class="create-tab" id="tab-dmo">
+        <input type="radio" name="create_type" id="chk-dmo" value="dmo" onchange="syncTab(this,'tab-dmo')"/>
+        <div class="tab-check"></div>
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10
+               a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10
+               a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
+        </svg>
+        DMO
+      </label>
+      <label class="create-tab" id="tab-ci">
+        <input type="radio" name="create_type" id="chk-ci" value="ci" onchange="syncTab(this,'tab-ci')"/>
+        <div class="tab-check"></div>
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0
+               V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0
+               V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        Calc. Insight
+      </label>
+    </div>
+
+    <!-- Drop zone -->
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" id="schema-file-input" accept=".json,application/json"/>
+      <div class="drop-icon">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+        </svg>
+      </div>
+      <div class="drop-title">Drop your JSON schema file here</div>
+      <div class="drop-sub"><span>Click to browse</span> &mdash; .json files only</div>
+    </div>
+
+    <!-- File preview card -->
+    <div class="file-preview" id="file-preview">
+      <div class="file-preview-head">
+        <span class="file-type-badge">JSON</span>
+        <span class="file-name" id="preview-filename">schema.json</span>
+        <span class="file-size" id="preview-filesize">—</span>
+        <button class="file-clear" id="file-clear-btn" title="Remove file">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="json-preview-wrap">
+        <div class="json-preview-label">
+          <span>Schema Preview</span>
+          <span id="preview-lines" style="font-weight:400;font-size:.68rem;color:#94a3b8;"></span>
+        </div>
+        <div class="json-code" id="json-code-block"></div>
+      </div>
+      <div class="detected-strip" id="detected-strip"></div>
+    </div>
+
+    <!-- Validation indicator -->
+    <div class="validation-row" id="validation-row">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" id="val-icon"></svg>
+      <span id="val-msg"></span>
+    </div>
+
+    <!-- Create button -->
+    <button type="button" class="btn-create" id="btn-create" onclick="submitCreateObjects()">
+      <svg class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <div class="btn-spinner"></div>
+      Create Objects in Data Cloud
+    </button>
+
+    <!-- Results panel -->
+    <div class="results-panel" id="results-panel">
+      <div class="results-head">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        Provisioning Results
+      </div>
+      <div id="result-rows"></div>
+    </div>
+
+        </div><!-- /action-body create -->
+      </details><!-- /action-item create -->
+
+      <!-- ── Action 3 : Delete Data Stream ── -->
+      <details class="action-item" id="delete-details">
+        <summary class="action-summary">
+          <div class="action-sum-left">
+            <div class="section-block-icon delete">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
+                     m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            </div>
+            <div>
+              <div class="action-sum-title">Delete Data Stream</div>
+              <div class="action-sum-sub">Remove a Data Stream and optionally its associated Data Lake Objects</div>
+            </div>
+          </div>
+          <div class="action-sum-right">
+            <span class="collapse-expand-btn">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+              <span class="expand-label"></span>
+            </span>
+          </div>
+        </summary>
+
+        <div class="action-body">
+
+          <!-- 1 — Data Stream Name -->
+          <div class="query-inner-label">
+            <div class="query-inner-num" style="background:#fff1f2;border-color:#fecdd3;color:#e11d48;">1</div>
+            Data Stream Name
+          </div>
+
+          <div class="stream-name-wrap">
+            <svg class="field-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7
+                   M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4
+                   M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+            </svg>
+            <input type="text" id="delete-stream-name" class="stream-name-input"
+                   placeholder="e.g. my_data_stream_v1"
+                   autocomplete="off" spellcheck="false"/>
+          </div>
+
+          <div class="query-inner-sep"></div>
+
+          <!-- 2 — Delete Options -->
+          <div class="query-inner-label">
+            <div class="query-inner-num" style="background:#fff1f2;border-color:#fecdd3;color:#e11d48;">2</div>
+            Delete Options
+          </div>
+
+          <label class="dlo-toggle-row" for="chk-delete-dlo">
+            <div class="dlo-toggle-wrap">
+              <input type="checkbox" id="chk-delete-dlo"/>
+              <span class="dlo-toggle-slider"></span>
+            </div>
+            <div>
+              <div class="dlo-toggle-text-head">Also delete associated Data Lake Objects</div>
+              <div class="dlo-toggle-text-sub">All DLOs linked to this Data Stream will be permanently removed along with their stored data.</div>
+            </div>
+            <span class="dlo-toggle-badge">Irreversible</span>
+          </label>
+
+          <div class="query-inner-sep"></div>
+
+          <!-- Delete button -->
+          <button type="button" class="btn-delete-stream" id="btn-delete-stream" onclick="submitDeleteStream()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
+                   m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            Delete Data Stream
+          </button>
+
+          <!-- Result panel -->
+          <div class="delete-result-panel" id="delete-result-panel">
+            <div class="delete-result-head">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2
+                     M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+              </svg>
+              Operation Result
+            </div>
+            <div class="delete-result-body" id="delete-result-body"></div>
+          </div>
+
+        </div><!-- /action-body delete -->
+      </details><!-- /action-item delete -->
+
+      <!-- ── Action 4 : Create KPI in Tableau Next ── -->
+      <details class="action-item" id="tableau-details">
+        <summary class="action-summary">
+          <div class="action-sum-left">
+            <div class="section-block-icon tableau">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0
+                     V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0
+                     V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="action-sum-title">Create KPI in Tableau Next</div>
+              <div class="action-sum-sub">Publish Data Cloud metrics as KPIs directly into Tableau Next dashboards</div>
+            </div>
+          </div>
+          <div class="action-sum-right">
+            <span class="collapse-expand-btn">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+              <span class="expand-label"></span>
+            </span>
+          </div>
+        </summary>
+
+        <div class="action-body">
+          <div class="tableau-coming-soon">
+
+            <div class="tableau-cs-icon">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+
+            <div>
+              <div class="tableau-cs-title">Functionality Under Development</div>
+              <div class="tableau-cs-msg">
+                We are actively building the integration to publish Salesforce Data Cloud KPIs
+                directly into Tableau Next. This feature will be available soon.
+              </div>
+            </div>
+
+            <div class="tableau-cs-badge">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Coming Soon — We will update you soon
+            </div>
+
+          </div>
+        </div><!-- /action-body tableau -->
+      </details><!-- /action-item tableau -->
+
+    </div><!-- /actions-list -->
+
+    </form>
+
+  </div><!-- /card-main-body -->
+
+</div><!-- /config-card -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const loadSteps = [
+    "Connecting to AWS Secrets Manager",
+    "Retrieving Salesforce credentials",
+    "Authenticating with Salesforce",
+    "Establishing Data Cloud session",
+    "Almost there",
+  ];
+
+  /* ── Expand / Collapse all action-items ── */
+  function toggleAllActions() {
+    const items = document.querySelectorAll('.action-item');
+    const btn   = document.getElementById('expand-all-btn');
+    const label = document.getElementById('expand-all-label');
+    const anyOpen = Array.from(items).some(d => d.open);
+    items.forEach(d => d.open = !anyOpen);
+    if (anyOpen) {
+      btn.classList.remove('all-open');
+      label.textContent = 'Expand All';
+    } else {
+      btn.classList.add('all-open');
+      label.textContent = 'Collapse All';
+    }
+  }
+
+  /* ── Keep expand-all button in sync when individual items are toggled ── */
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.action-item').forEach(d => {
+      d.addEventListener('toggle', () => {
+        const items = document.querySelectorAll('.action-item');
+        const btn   = document.getElementById('expand-all-btn');
+        const label = document.getElementById('expand-all-label');
+        const allOpen = Array.from(items).every(i => i.open);
+        if (allOpen) {
+          btn.classList.add('all-open');
+          label.textContent = 'Collapse All';
+        } else {
+          btn.classList.remove('all-open');
+          label.textContent = 'Expand All';
+        }
+      });
+    });
+  });
+
+  /* ── Secret name show / hide ── */
+  function toggleSecret() {
+    const inp  = document.getElementById('secret_name');
+    const icon = document.getElementById('secret-eye');
+    const show = inp.type === 'password';
+    inp.type   = show ? 'text' : 'password';
+    icon.innerHTML = show
+      ? /* eye-off */
+        '<path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>'
+      : /* eye */
+        '<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>';
+  }
+
+  document.getElementById("aws-form").addEventListener("submit", function (e) {
+    // Validate a category is selected
+    if (!document.querySelector('input[name="entity_category"]:checked')) {
+      e.preventDefault();
+      alert("Please select a Category before continuing.");
+      return;
+    }
+    // Validate an object type is selected
+    if (!document.querySelector('input[name="object_type"]:checked')) {
+      e.preventDefault();
+      alert("Please select an Object Type before continuing.");
+      return;
+    }
+    const overlay = document.getElementById("loading-overlay");
+    const stepEl  = document.getElementById("loading-step-text");
+    overlay.classList.add("active");
+
+    let i = 0;
+    stepEl.innerHTML = loadSteps[0] + '<span class="step-dots"></span>';
+    setInterval(() => {
+      i = (i + 1) % loadSteps.length;
+      stepEl.innerHTML = loadSteps[i] + '<span class="step-dots"></span>';
+    }, 2500);
+  });
+
+  /* ════════════════════════════════════════════
+     CREATE DATA OBJECTS — JS
+  ════════════════════════════════════════════ */
+
+  let parsedSchema = null;
+
+  /* ── Toggle tab check style (radio — only one selected) ── */
+  function syncTab(chk, tabId) {
+    // Deselect all tabs first
+    ['tab-ds','tab-dlo','tab-dmo','tab-ci'].forEach(id => {
+      document.getElementById(id).classList.remove('checked');
+    });
+    // Select the clicked one
+    document.getElementById(tabId).classList.add('checked');
+  }
+
+  /* ── Drag-and-drop wiring ── */
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('schema-file-input');
+
+  dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  });
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) handleFile(fileInput.files[0]);
+  });
+
+  document.getElementById('file-clear-btn').addEventListener('click', clearFile);
+
+  /* ── Handle uploaded file ── */
+  function handleFile(file) {
+    if (!file.name.endsWith('.json') && file.type !== 'application/json') {
+      showValidation(false, 'Only .json files are accepted. Please upload a valid JSON schema.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        parsedSchema = JSON.parse(e.target.result);
+        renderPreview(file, parsedSchema, e.target.result);
+        showValidation(true, 'JSON schema parsed successfully — ready to provision.');
+      } catch (err) {
+        parsedSchema = null;
+        showValidation(false, 'Invalid JSON: ' + err.message);
+        renderPreviewRaw(file, e.target.result);
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function clearFile() {
+    parsedSchema = null;
+    fileInput.value = '';
+    document.getElementById('file-preview').classList.remove('visible');
+    document.getElementById('validation-row').className = 'validation-row';
+    document.getElementById('results-panel').classList.remove('visible');
+  }
+
+  /* ── Render JSON preview ── */
+  function renderPreview(file, obj, raw) {
+    document.getElementById('preview-filename').textContent = file.name;
+    document.getElementById('preview-filesize').textContent = formatBytes(file.size);
+    const lines = raw.split('\n').length;
+    document.getElementById('preview-lines').textContent = lines + ' lines';
+
+    // Syntax-highlighted preview (first 30 lines)
+    const preview = raw.split('\n').slice(0, 30).join('\n');
+    document.getElementById('json-code-block').innerHTML = syntaxHighlight(preview);
+
+    // Detected fields
+    renderDetectedBadges(obj);
+    document.getElementById('file-preview').classList.add('visible');
+  }
+
+  function renderPreviewRaw(file, raw) {
+    document.getElementById('preview-filename').textContent = file.name;
+    document.getElementById('preview-filesize').textContent = formatBytes(file.size);
+    document.getElementById('preview-lines').textContent = '—';
+    document.getElementById('json-code-block').textContent = raw.substring(0, 800);
+    document.getElementById('detected-strip').innerHTML = '';
+    document.getElementById('file-preview').classList.add('visible');
+  }
+
+  function renderDetectedBadges(obj) {
+    const strip = document.getElementById('detected-strip');
+    const badges = [];
+
+    // Detect common keys and surface them
+    const checks = [
+      ['name',          v => 'Name: ' + v],
+      ['label',         v => 'Label: ' + v],
+      ['category',      v => 'Category: ' + v],
+      ['type',          v => 'Type: ' + v],
+      ['objectApiName', v => 'API Name: ' + v],
+      ['primaryKey',    v => 'PK: ' + v],
+      ['fields',        v => Array.isArray(v) ? v.length + ' fields' : null, true],
+      ['dataStream',    () => 'DS definition', false, 'info'],
+      ['dataLakeObject',() => 'DLO definition', false, 'info'],
+      ['dataModelObject',()=> 'DMO definition', false, 'info'],
+      ['calculatedInsight',()=>'CI definition', false, 'info'],
+    ];
+
+    checks.forEach(([key, fmt, , cls]) => {
+      if (obj[key] !== undefined) {
+        const label = fmt(obj[key]);
+        if (label) badges.push({ label, cls: cls || 'ok' });
+      }
+    });
+
+    // Count top-level keys if no recognised fields found
+    const topKeys = Object.keys(obj);
+    if (badges.length === 0) {
+      badges.push({ label: topKeys.length + ' top-level keys', cls: 'warn' });
+      topKeys.slice(0, 5).forEach(k => badges.push({ label: k, cls: 'warn' }));
+    }
+
+    strip.innerHTML = badges
+      .map(b => `<span class="det-badge ${b.cls === 'warn' ? 'warn' : ''}">${escHtml(b.label)}</span>`)
+      .join('');
+  }
+
+  /* ── Validation indicator ── */
+  function showValidation(ok, msg) {
+    const row = document.getElementById('validation-row');
+    const icon = document.getElementById('val-icon');
+    const txt  = document.getElementById('val-msg');
+    row.className = 'validation-row ' + (ok ? 'valid' : 'invalid');
+    icon.innerHTML = ok
+      ? '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>'
+      : '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>';
+    icon.setAttribute('fill', 'none');
+    icon.setAttribute('viewBox', '0 0 24 24');
+    icon.setAttribute('stroke', 'currentColor');
+    icon.setAttribute('stroke-width', '2');
+    txt.textContent = msg;
+  }
+
+  /* ── Submit to backend ── */
+  function submitCreateObjects() {
+    const panel = document.getElementById('results-panel');
+    panel.classList.add('visible');
+    document.getElementById('result-rows').innerHTML = `
+      <div class="coming-soon-notice">
+        <div class="csn-icon">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div class="csn-body">
+          <div class="csn-title">Functionality Under Development</div>
+          <div class="csn-msg">We are actively working on this feature. We will update you soon.</div>
+        </div>
+      </div>`;
+  }
+
+  /* ── Delete Data Stream ── */
+  function submitDeleteStream() {
+    const name   = document.getElementById('delete-stream-name').value.trim();
+    const delDlo = document.getElementById('chk-delete-dlo').checked;
+    const panel  = document.getElementById('delete-result-panel');
+    const body   = document.getElementById('delete-result-body');
+    const btn    = document.getElementById('btn-delete-stream');
+
+    if (!name) {
+      body.innerHTML = deleteResultHTML(false, 'Stream Name Required',
+        'Please enter the name of the Data Stream you want to delete.');
+      panel.classList.add('visible');
+      return;
+    }
+
+    // Loading state
+    btn.disabled = true;
+    btn.innerHTML = `
+      <svg style="width:16px;height:16px;animation:spin .7s linear infinite" fill="none"
+           viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581
+             m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+      ${delDlo ? 'Deleting Stream &amp; DLOs…' : 'Deleting Stream…'}`;
+
+    panel.classList.remove('visible');
+
+    const fd = new FormData();
+    fd.append('stream_name', name);
+    fd.append('delete_dlo',  delDlo ? '1' : '0');
+
+    fetch('/delete-stream', { method: 'POST', body: fd })
+      .then(r => r.json())
+      .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = `
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
+                 m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          Delete Data Stream`;
+        body.innerHTML = deleteResultHTML(data.success, data.title || (data.success ? 'Deleted Successfully' : 'Delete Failed'), data.message || '');
+        panel.classList.add('visible');
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = `
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6
+                 m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          Delete Data Stream`;
+        body.innerHTML = deleteResultHTML(false, 'Request Failed', err.message);
+        panel.classList.add('visible');
+      });
+  }
+
+  function deleteResultHTML(success, title, msg) {
+    const bg      = success ? '#f0fdf4' : '#fff1f2';
+    const border  = success ? '#bbf7d0' : '#fecdd3';
+    const iconBg  = success ? '#dcfce7' : '#fecdd3';
+    const iconClr = success ? '#16a34a' : '#e11d48';
+    const titClr  = success ? '#14532d' : '#9f1239';
+    const msgClr  = success ? '#166534' : '#be123c';
+    const icon    = success
+      ? `<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>`
+      : `<path stroke-linecap="round" stroke-linejoin="round"
+           d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94
+              a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>`;
+    return `
+      <div class="coming-soon-notice" style="background:${bg};border-color:${border};">
+        <div class="csn-icon" style="background:${iconBg};color:${iconClr};">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            ${icon}
+          </svg>
+        </div>
+        <div class="csn-body">
+          <div class="csn-title" style="color:${titClr};">${title}</div>
+          <div class="csn-msg"   style="color:${msgClr};">${msg}</div>
+        </div>
+      </div>`;
+  }
+
+  /* ── Result row rendering ── */
+  function renderResultRows(selections, state) {
+    const panel = document.getElementById('results-panel');
+    const rows  = document.getElementById('result-rows');
+    rows.innerHTML = selections.map(s => `
+      <div class="result-row" id="result-row-${s.key}">
+        <div class="result-icon ${state}" id="result-icon-${s.key}">
+          ${spinnerSvg()}
+        </div>
+        <div style="flex:1;">
+          <div class="result-label">${escHtml(s.label)}</div>
+          <div class="result-detail" id="result-detail-${s.key}">Waiting…</div>
+        </div>
+        <div class="result-status ${state}" id="result-status-${s.key}">Queued</div>
+      </div>`).join('');
+    panel.classList.add('visible');
+  }
+
+  function setResultState(key, state, statusText, detail) {
+    const iconEl   = document.getElementById('result-icon-' + key);
+    const statusEl = document.getElementById('result-status-' + key);
+    const detailEl = document.getElementById('result-detail-' + key);
+    if (!iconEl) return;
+    iconEl.className   = 'result-icon ' + state;
+    statusEl.className = 'result-status ' + state;
+    statusEl.textContent = statusText;
+    if (detail) detailEl.textContent = detail;
+
+    const svgMap = {
+      pending: spinnerSvg(),
+      running: spinnerSvg(),
+      success: '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;color:#16a34a"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>',
+      error:   '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;color:#dc2626"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>',
+      skipped: '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:#94a3b8"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h8"/></svg>'
+    };
+    iconEl.innerHTML = svgMap[state] || spinnerSvg();
+  }
+
+  /* ── Helpers ── */
+  function syntaxHighlight(json) {
+    return escHtml(json)
+      .replace(/"([^"]+)"(\s*:)/g, '<span class="json-key">"$1"</span>$2')
+      .replace(/:\s*"([^"]*)"/g, ': <span class="json-str">"$1"</span>')
+      .replace(/:\s*(-?\d+\.?\d*)/g, ': <span class="json-num">$1</span>')
+      .replace(/:\s*(true|false)/g, ': <span class="json-bool">$1</span>')
+      .replace(/:\s*(null)/g, ': <span class="json-null">$1</span>');
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function formatBytes(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+    return (b/1048576).toFixed(2) + ' MB';
+  }
+
+  function spinnerSvg() {
+    return '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>';
+  }
+  function streamIcon(){ return ''; }
+  function dloIcon()   { return ''; }
+  function dmoIcon()   { return ''; }
+  function ciIcon()    { return ''; }
+</script>
+</body>
+</html>

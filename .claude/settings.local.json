@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m venv venv)",
+      "Bash(venv/Scripts/pip install:*)",
+      "Bash(venv/Scripts/python -c \"import flask, requests, pandas, openpyxl; print\\(''All imports OK''\\)\")",
+      "Bash(venv/Scripts/python -m py_compile app.py)",
+      "Bash(del \"C:\\\\Users\\\\User\\\\Desktop\\\\Desktop Files\\\\Projects\\\\claude-code-sfdc\\\\templates\\\\aws_secret.html\")",
+      "Bash(pip show:*)",
+      "Bash(pip install:*)",
+      "Bash(python:*)"
+    ]
+  }
+}
