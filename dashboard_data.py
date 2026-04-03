@@ -16,7 +16,7 @@ import boto3
 import os
 import re
 import json
-
+import pandas as pd
 from salesforcecdpconnector.connection import SalesforceCDPConnection
 
 
@@ -54,8 +54,8 @@ class Get_Dashboard_KPIS:
         username = secret["USERNAME"]
         return client_id, username, client_secret
 
-    def get_data_stream_counts(self):
-        client_id, username, client_secret = self.get_secret("studycast-integration-access-secret","us-east-1")
+    def get_data_stream_counts(self,client_id, username, client_secret):
+        
         token_url = SALESFORCE_LOGIN_URL.rstrip("/") + TOKEN_PATH
         payload = {
             "grant_type":    "client_credentials",
@@ -77,8 +77,29 @@ class Get_Dashboard_KPIS:
         total_datastream =  payload.get("totalSize")
         return total_datastream
     
-    def get_calculated_insights_counts(self):
-        client_id, username, client_secret = self.get_secret("studycast-integration-access-secret","us-east-1")
+    def get_data_lakeobject_counts(self,client_id, username, client_secret):
+        token_url = SALESFORCE_LOGIN_URL.rstrip("/") + TOKEN_PATH
+        payload = {
+            "grant_type":    "client_credentials",
+            "client_id":     client_id,
+            "client_secret": client_secret,
+        }
+        resp = requests.post(token_url, data=payload, timeout=30)
+        access_token = resp.json()["access_token"]
+        instance_url = resp.json()["instance_url"]
+
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Accept": "application/json",
+        }
+        total_datalakeobjects= 0
+        next_url = f"{instance_url.rstrip('/')}/services/data/v64.0/ssot/data-lake-objects"
+        resp = requests.get(next_url, headers=headers)
+        payload = resp.json()
+        total_datalakeobjects =  payload.get("totalSize")
+        return total_datalakeobjects
+    
+    def get_calculated_insights_counts(self,client_id, username, client_secret):
         token_url = SALESFORCE_LOGIN_URL.rstrip("/") + TOKEN_PATH
         payload = {
             "grant_type":    "client_credentials",
@@ -100,8 +121,21 @@ class Get_Dashboard_KPIS:
         total_calculated_insights = payload["collection"]["total"]
         return total_calculated_insights
     
-    def get_data_lakeobject_counts(self):
-        client_id, username, client_secret = self.get_secret("studycast-integration-access-secret","us-east-1")
+    def get_unique_profile_counts(self,client_id, username, client_secret):
+        conn = SalesforceCDPConnection(
+        login_url='https://mimit.my.salesforce.com',
+        client_id=client_id, 
+        username=username, 
+        client_secret=client_secret
+        )
+        cur = conn.cursor()
+        cur.execute('SELECT COUNT(*) AS profile_count FROM UnifiedIndividual__dlm')
+        result = cur.fetchone()
+        #results = cur.fetchall()
+        total_unique_profiles= result[0]
+        return total_unique_profiles
+    
+    def get_total_segments(self,client_id, username, client_secret):
         token_url = SALESFORCE_LOGIN_URL.rstrip("/") + TOKEN_PATH
         payload = {
             "grant_type":    "client_credentials",
@@ -116,39 +150,59 @@ class Get_Dashboard_KPIS:
             "Authorization": f"Bearer {access_token}",
             "Accept": "application/json",
         }
-        total_datalakeobjects= 0
-        next_url = f"{instance_url.rstrip('/')}/services/data/v64.0/ssot/data-lake-objects"
+        total_segments= 0
+        next_url = f"{instance_url.rstrip('/')}/services/data/v64.0/ssot/segments"
         resp = requests.get(next_url, headers=headers)
         payload = resp.json()
-        total_datalakeobjects =  payload.get("totalSize")
-        return total_datalakeobjects
+        total_segments =  payload.get("totalSize")
+        return total_segments
+    
+    def get_All_data_data_stream(self,client_id, username, client_secret):
+        token_url = SALESFORCE_LOGIN_URL.rstrip("/") + TOKEN_PATH
+        payload = {
+            "grant_type":    "client_credentials",
+            "client_id":     client_id,
+            "client_secret": client_secret,
+        }
+        resp = requests.post(token_url, data=payload, timeout=30)
+        access_token = resp.json()["access_token"]
+        instance_url = resp.json()["instance_url"]
 
-    def get_unique_profile_counts(self):
-        client_id, username, client_secret = self.get_secret("studycast-integration-access-secret","us-east-1")
-        conn = SalesforceCDPConnection(
-        login_url='https://mimit.my.salesforce.com',
-        client_id=client_id, 
-        username=username, 
-        client_secret=client_secret
-        )
-        cur = conn.cursor()
-        cur.execute('SELECT COUNT(*) AS profile_count FROM UnifiedIndividual__dlm')
-        result = cur.fetchone()
-        #results = cur.fetchall()
-        total_unique_profiles= result[0]
-        return total_unique_profiles
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Accept": "application/json",
+        }
+        next_url = f"{instance_url.rstrip('/')}/services/data/v64.0/ssot/data-streams?limit=200&offset=0"
+        payload = {}
+        while next_url:
+            print(next_url)
+            resp = requests.get(next_url, headers=headers)
+            payload = {**payload, **resp.json()}
+            next_url = payload.get("nextPageUrl") or payload.get("next") or None
+            df = pd.DataFrame(payload)
+            df.to_csv("DataStream.csv")
+            if next_url == "/services/data/v64.0/ssot/data-streams?limit=200&offset=1001":
+                break
+            if next_url and next_url.startswith("/"):
+                next_url = instance_url.rstrip("/") + next_url
+        
+        return df
 
     
 if __name__ == "__main__": 
     Get_Dashboard_KPI_obj = Get_Dashboard_KPIS("a","b")
-    total_datastreams= Get_Dashboard_KPI_obj.get_data_stream_counts()
-    #total_datalakeobjects= Get_Dashboard_KPI_obj.get_data_lakeobject_counts()
-    total_calculated_insights = total_calculated_insights= Get_Dashboard_KPI_obj.get_calculated_insights_counts()
-    total_unique_profiles = Get_Dashboard_KPI_obj.get_unique_profile_counts()
-    print(total_datastreams)
-    #print(total_datalakeobjects)
-    print(total_calculated_insights)
-    print(total_unique_profiles)
+    client_id, username, client_secret = Get_Dashboard_KPI_obj.get_secret("studycast-integration-access-secret","us-east-1")
+    total_datastreams= Get_Dashboard_KPI_obj.get_data_stream_counts(client_id, username, client_secret)
+    #total_datalakeobjects= Get_Dashboard_KPI_obj.get_data_lakeobject_counts(client_id, username, client_secret)
+    total_calculated_insights = total_calculated_insights= Get_Dashboard_KPI_obj.get_calculated_insights_counts(client_id, username, client_secret)
+    total_unique_profiles = Get_Dashboard_KPI_obj.get_unique_profile_counts(client_id, username, client_secret)
+    total_segments = Get_Dashboard_KPI_obj.get_total_segments(client_id, username, client_secret)
+    df = Get_Dashboard_KPI_obj.get_All_data_data_stream(client_id, username, client_secret)
+    print("Data Streams",total_datastreams)
+    #print(total_datalakeobjects)   
+    print("Calculated Insights", total_calculated_insights)
+    print("Unique Profiles", total_unique_profiles)
+    print("Total Segments", total_segments)
 
 
 # while next_url:
