@@ -173,19 +173,34 @@ class Get_Dashboard_KPIS:
             "Accept": "application/json",
         }
         next_url = f"{instance_url.rstrip('/')}/services/data/v64.0/ssot/data-streams?limit=200&offset=0"
-        payload = {}
+        seen_urls = set()
+        all_data_streams = []
+
         while next_url:
-            print(next_url)
-            resp = requests.get(next_url, headers=headers)
-            payload = {**payload, **resp.json()}
-            next_url = payload.get("nextPageUrl") or payload.get("next") or None
-            df = pd.DataFrame(payload)
-            df.to_csv("DataStream.csv")
-            if next_url == "/services/data/v64.0/ssot/data-streams?limit=200&offset=1001":
-                break
-            if next_url and next_url.startswith("/"):
+            # make relative nextPageUrl absolute before checking duplicates
+            if next_url.startswith("/"):
                 next_url = instance_url.rstrip("/") + next_url
-        
+
+            # stop if same URL comes again
+            if next_url in seen_urls:
+                print(f"Duplicate nextPageUrl detected, stopping loop: {next_url}")
+                break
+
+            seen_urls.add(next_url)
+            print(next_url)
+
+            resp = requests.get(next_url, headers=headers)
+            resp.raise_for_status()
+            page_data = resp.json()
+
+            # append only the records
+            all_data_streams.extend(page_data.get("dataStreams", []))
+
+            # get next page only from current response
+            next_url = page_data.get("nextPageUrl") or page_data.get("next") or None
+
+            df = pd.DataFrame(all_data_streams)
+            df.to_csv("DataStream.csv", index=False)
         return df
 
     
@@ -199,7 +214,7 @@ if __name__ == "__main__":
     total_segments = Get_Dashboard_KPI_obj.get_total_segments(client_id, username, client_secret)
     df = Get_Dashboard_KPI_obj.get_All_data_data_stream(client_id, username, client_secret)
     print("Data Streams",total_datastreams)
-    #print(total_datalakeobjects)   
+    #print(total_datalakeobjects)
     print("Calculated Insights", total_calculated_insights)
     print("Unique Profiles", total_unique_profiles)
     print("Total Segments", total_segments)

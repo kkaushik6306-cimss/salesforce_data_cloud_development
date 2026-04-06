@@ -248,6 +248,15 @@ def delete_stream():
             api_url,
             headers=headers,data=payload
         )
+        if dmo_resp.status_code == 500:
+            DMO_NAME = stream_name.replace("RDS_","amd_pm-")
+            DMO_NAME = DMO_NAME+'__dlm'
+            api_url = f"{instance_url}/services/data/v64.0//ssot/data-model-objects/{DMO_NAME}"
+            print(api_url)
+            dmo_resp = requests.delete(
+                api_url,
+                headers=headers,data=payload
+            )
         #Delete Data Stream & DLO
         headers = {
             "Accept": "application/json",
@@ -267,7 +276,7 @@ def delete_stream():
         return jsonify({
             "success": True,
             "title":   "Stream Deleted",
-            "message": f"Data Stream '{stream_name}' has been deleted successfully.",
+            "message": f"Data Stream & DMO '{stream_name}' has been deleted successfully.",
         })
     else:
         # ── API path 2: Delete Data Stream only ──
@@ -275,7 +284,7 @@ def delete_stream():
             "Accept": "application/json",
             "Authorization": f"Bearer {access_token}"
         }
-        api_url = f"https://mimit.my.salesforce.com/services/data/v64.0/ssot/data-streams/{stream_name}?shouldDeleteDataLakeObject=False"
+        api_url = f"https://mimit.my.salesforce.com/services/data/v64.0/ssot/data-streams/{stream_name}?shouldDeleteDataLakeObject=True"
         stream_resp = requests.delete(
             api_url,
             headers=headers,
