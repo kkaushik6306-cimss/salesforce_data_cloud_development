@@ -119,7 +119,8 @@ class Get_Dashboard_KPIS:
         resp = requests.get(next_url, headers=headers)
         payload = resp.json()
         total_calculated_insights = payload["collection"]["total"]
-        return total_calculated_insights
+        active_calculated_insights = payload["collection"]["count"]
+        return active_calculated_insights,total_calculated_insights
     
     def get_unique_profile_counts(self,client_id, username, client_secret):
         conn = SalesforceCDPConnection(
@@ -199,42 +200,59 @@ class Get_Dashboard_KPIS:
             # get next page only from current response
             next_url = page_data.get("nextPageUrl") or page_data.get("next") or None
 
-            df = pd.DataFrame(all_data_streams)
-            df.to_csv("DataStream.csv", index=False)
+        df = pd.DataFrame(all_data_streams)
+        df.to_csv("DataStream.csv", index=False)
         return df
 
+    def create_dashboard_KPI_csv(self,total_datastreams,total_datalakeobjects,active_calculated_insights,
+                                 total_calculated_insights,total_unique_profiles,total_segments):
+        dashboard_KPIs = {}
+        dashboard_KPIs["Total DS"] = total_datastreams
+        dashboard_KPIs["Total DLO"] = 1350
+        dashboard_KPIs["Total DMO"] = 1625
+        dashboard_KPIs["Total CI"]= total_calculated_insights
+        dashboard_KPIs["Active CI"]= active_calculated_insights
+        dashboard_KPIs["Total UP"] = total_unique_profiles
+        dashboard_KPIs["Total Seg"] = total_segments
+        dashboard_KPIs["Total Connections"] = 10
+        dashboard_df = pd.DataFrame([dashboard_KPIs])                       
+        dashboard_df.to_csv('Dashboard.csv',index=False)
+        return dashboard_df
+        
+    def get_KPIs(self):
+        df = pd.read_csv('Dashboard.csv')
+        total_ds = df['Total DS']
+        total_dlo = df['Total DLO']
+        total_dmo = df['Total DMO']
+        total_ci = df['Total CI']
+        active_ci = df['Active CI']
+        total_up = df['Total UP']
+        total_seg = df['Total Seg']
+        total_conn = df['Total Connections']
+        return total_ds,total_dlo,total_dmo,total_ci,active_ci,total_up,total_seg,total_conn
+
+    def get_informationfrom_datastream_csv(self):
+        df = pd.read_csv('DataStream.csv')
+        active_datastream = df.loc[df['status']=='ACTIVE'].count()
+        error_datastream = df.loc[df['status']=='ERROR'].count()
+        df['lastRefreshDate'] = pd.to_datetime(df["lastRefreshDate"], format="mixed").dt.date
+        # Get today's date
+        today = pd.Timestamp.today().date()
+        # Filter and sum
+        today_sum = df.loc[df['lastRefreshDate'] == today, 'lastProcessedRecords'].sum()
+        return active_datastream,error_datastream,today_sum
     
 if __name__ == "__main__": 
     Get_Dashboard_KPI_obj = Get_Dashboard_KPIS("a","b")
     client_id, username, client_secret = Get_Dashboard_KPI_obj.get_secret("studycast-integration-access-secret","us-east-1")
     total_datastreams= Get_Dashboard_KPI_obj.get_data_stream_counts(client_id, username, client_secret)
     #total_datalakeobjects= Get_Dashboard_KPI_obj.get_data_lakeobject_counts(client_id, username, client_secret)
-    total_calculated_insights = total_calculated_insights= Get_Dashboard_KPI_obj.get_calculated_insights_counts(client_id, username, client_secret)
+    active_calculated_insights,total_calculated_insights= Get_Dashboard_KPI_obj.get_calculated_insights_counts(client_id, username, client_secret)
     total_unique_profiles = Get_Dashboard_KPI_obj.get_unique_profile_counts(client_id, username, client_secret)
     total_segments = Get_Dashboard_KPI_obj.get_total_segments(client_id, username, client_secret)
-    df = Get_Dashboard_KPI_obj.get_All_data_data_stream(client_id, username, client_secret)
-    print("Data Streams",total_datastreams)
-    #print(total_datalakeobjects)
-    print("Calculated Insights", total_calculated_insights)
-    print("Unique Profiles", total_unique_profiles)
-    print("Total Segments", total_segments)
+    #df = Get_Dashboard_KPI_obj.get_All_data_data_stream(client_id, username, client_secret)
+    dashboard_df = Get_Dashboard_KPI_obj.create_dashboard_KPI_csv(total_datastreams,1350,active_calculated_insights,
+                                 total_calculated_insights,total_unique_profiles,total_segments)
 
-
-# while next_url:
-    #     print(next_url)
-       
-    #     print(resp.status_code)
-    #     
-
-    #     items = (
-    #         payload.get("items")
-    #         or payload.get("data")
-    #         or payload.get("records")
-    #         or payload.get("dataStreams", [])
-    #         or []
-    #     )
-    #     total += len(items)
-
-    #     next_url = payload.get("nextPageUrl") or payload.get("next") or None
-    #     if next_url and next_url.startswith("/"):
-    #         next_url = instance_url.rstrip("/") + next_url
+    total_ds,total_dlo,total_dmo,total_ci,active_ci,total_up,total_seg,total_conn = Get_Dashboard_KPI_obj.get_KPIs()                                                                              
+    active_datastream,error_datastream,today_sum = Get_Dashboard_KPI_obj.get_informationfrom_datastream_csv()

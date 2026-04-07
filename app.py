@@ -14,6 +14,7 @@ from flask import (
     Flask, render_template, request, jsonify, send_file,
     session, redirect, url_for, flash
 )
+from dashboard_data import Get_Dashboard_KPIS
 app = Flask(__name__)
 app.secret_key = "sfdc-datastream-secret-key"
 
@@ -182,7 +183,33 @@ def aws_config():
 @app.route("/dashboard", methods=["GET"])
 @login_required
 def dashboard():
-    return render_template("dashboard.html")
+    kpi_obj = Get_Dashboard_KPIS("a", "b")
+    total_ds, total_dlo, total_dmo, total_ci,active_ci, total_up, total_seg, total_conn = kpi_obj.get_KPIs()
+    active_datastream,error_datastream,today_sum = kpi_obj.get_informationfrom_datastream_csv()
+    # Extract scalar from pandas Series if needed
+    def _val(v):
+        return v.iloc[0] if hasattr(v, 'iloc') else v
+    active_rate = _val(active_datastream)/_val(total_ds)
+    active_rate = f"{active_rate:.2%}"
+    inactive_rate = _val(error_datastream)/_val(total_ds)
+    inactive_rate = f"{inactive_rate:.2%}"
+    active_ci_rate = _val(active_ci)/_val(total_ci)
+    active_ci_rate = f"{active_ci_rate:.2%}"
+    #total_up = f"{total_up/1000:.1f}K"
+    return render_template(
+        "dashboard.html",
+        total_ds=_val(total_ds),
+        total_dlo=_val(total_dlo),
+        total_dmo=_val(total_dmo),
+        total_ci=_val(total_ci),
+        active_ci = _val(active_ci),
+        total_up=_val(total_up),
+        total_seg=_val(total_seg),
+        total_conn=_val(total_conn),
+        active_datastream = _val(active_datastream),error_datastream=_val(error_datastream),
+        active_rate = active_rate,active_ci_rate=active_ci_rate,
+        inactive_rate = _val(inactive_rate),today_sum = _val(today_sum)
+    )
 
 
 # -----------------------------------------------------------------------------

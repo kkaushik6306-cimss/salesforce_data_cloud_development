@@ -573,10 +573,10 @@
         </svg>
         Total Data Streams
       </div>
-      <div class="hero-value" id="stat-total-streams">—</div>
+      <div class="hero-value" id="stat-total-streams">{{ total_ds }}</div>
       <div class="hero-sub">
-        <span class="hero-badge badge-up">&#9650; 3 this week</span>
-        &nbsp;of 50 provisioned
+        <!-- <span class="hero-badge badge-up">&#9650; 3 this week</span>
+        &nbsp;of 50 provisioned -->
       </div>
       <div class="hero-icon">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -593,10 +593,10 @@
         </svg>
         Active Data Streams
       </div>
-      <div class="hero-value">38</div>
+      <div class="hero-value">{{active_datastream}}</div>
       <div class="hero-sub">
-        <span class="hero-badge badge-up">80.9% active rate</span>
-        &nbsp;9 inactive
+        <span class="hero-badge badge-up">{{active_rate}} active rate</span>
+        <!-- &nbsp;9 inactive -->
       </div>
       <div class="hero-icon">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -614,10 +614,10 @@
         </svg>
         Data Lake Objects
       </div>
-      <div class="hero-value">124</div>
+      <div class="hero-value">{{ total_dlo }}</div>
       <div class="hero-sub">
-        <span class="hero-badge badge-up">&#9650; 7 new</span>
-        &nbsp;DLOs registered
+        <!-- <span class="hero-badge badge-up">&#9650; 7 new</span>
+        &nbsp;DLOs registered -->
       </div>
       <div class="hero-icon">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -636,7 +636,7 @@
         </svg>
         Data Model Objects
       </div>
-      <div class="hero-value">86</div>
+      <div class="hero-value">{{ total_dmo }}</div>
       <div class="hero-sub">
         <span class="hero-badge badge-neu">stable</span>
         &nbsp;semantic models
@@ -659,7 +659,7 @@
       <div class="kpi-top">
         <div>
           <div class="kpi-label">Calculated Insights</div>
-          <div class="kpi-val">23</div>
+          <div class="kpi-val">{{ total_ci }}</div>
         </div>
         <div class="kpi-icon-wrap cyan">
           <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -668,10 +668,70 @@
           </svg>
         </div>
       </div>
-      <div class="kpi-sub">19 active &bull; 4 scheduled</div>
+      <div class="kpi-sub">{{active_ci}} active &bull; {{total_ci-active_ci}} scheduled</div>
       <div class="prog-wrap">
-        <div class="prog-header"><span>Active</span><span>82.6%</span></div>
+        <div class="prog-header"><span>Active</span><span>{{active_ci_rate}}</span></div>
         <div class="prog-track"><div class="prog-fill fill-cyan" style="width:82.6%"></div></div>
+      </div>
+    </div>
+
+    <!-- Unified Profiles -->
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div>
+          <div class="kpi-label">Unified Profiles</div>
+          <div class="kpi-val">{{ total_up }}</div>
+        </div>
+        <div class="kpi-icon-wrap purple">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+      </div>
+      <!-- <div class="kpi-sub">identity resolved &bull; 94.1% match rate</div> -->
+      <div class="prog-wrap">
+        <div class="prog-header"><span>Identity resolution</span><span>94.1%</span></div>
+        <div class="prog-track"><div class="prog-fill fill-purple" style="width:94.1%"></div></div>
+      </div>
+    </div>
+
+    <!-- Data Volume Today -->
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div>
+          <div class="kpi-label">Volume Today</div>
+          <div class="kpi-val">{{today_sum}}</div>
+        </div>
+        <div class="kpi-icon-wrap blue">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+          </svg>
+        </div>
+      </div>
+      <!-- <div class="kpi-sub">records ingested &bull; +12% vs yesterday</div> -->
+      <div class="prog-wrap">
+        <div class="prog-header"><span>Daily budget</span><span>73%</span></div>
+        <div class="prog-track"><div class="prog-fill fill-blue" style="width:73%"></div></div>
+      </div>
+    </div>
+
+    <!-- Failed Streams -->
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div>
+          <div class="kpi-label">Failed Streams (24h)</div>
+          <div class="kpi-val">{{error_datastream}}</div>
+        </div>
+        <div class="kpi-icon-wrap red">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+      </div>
+      <!-- <div class="kpi-sub">2 auth errors &bull; 1 timeout</div> -->
+      <div class="prog-wrap">
+        <div class="prog-header"><span>Error rate</span><span>{{inactive_rate}}</span></div>
+        <div class="prog-track"><div class="prog-fill fill-red" style="width:6.4%"></div></div>
       </div>
     </div>
 
@@ -715,45 +775,7 @@
       </div>
     </div>
 
-    <!-- Data Volume Today -->
-    <div class="kpi-card">
-      <div class="kpi-top">
-        <div>
-          <div class="kpi-label">Volume Today</div>
-          <div class="kpi-val">18.2M</div>
-        </div>
-        <div class="kpi-icon-wrap blue">
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
-          </svg>
-        </div>
-      </div>
-      <div class="kpi-sub">records ingested &bull; +12% vs yesterday</div>
-      <div class="prog-wrap">
-        <div class="prog-header"><span>Daily budget</span><span>73%</span></div>
-        <div class="prog-track"><div class="prog-fill fill-blue" style="width:73%"></div></div>
-      </div>
-    </div>
-
-    <!-- Unified Profiles -->
-    <div class="kpi-card">
-      <div class="kpi-top">
-        <div>
-          <div class="kpi-label">Unified Profiles</div>
-          <div class="kpi-val">2.41M</div>
-        </div>
-        <div class="kpi-icon-wrap purple">
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-          </svg>
-        </div>
-      </div>
-      <div class="kpi-sub">identity resolved &bull; 94.1% match rate</div>
-      <div class="prog-wrap">
-        <div class="prog-header"><span>Identity resolution</span><span>94.1%</span></div>
-        <div class="prog-track"><div class="prog-fill fill-purple" style="width:94.1%"></div></div>
-      </div>
-    </div>
+    
 
     <!-- Schema Coverage -->
     <div class="kpi-card">
@@ -795,30 +817,10 @@
       </div>
     </div>
 
-    <!-- Failed Streams -->
-    <div class="kpi-card">
-      <div class="kpi-top">
-        <div>
-          <div class="kpi-label">Failed Streams (24h)</div>
-          <div class="kpi-val">3</div>
-        </div>
-        <div class="kpi-icon-wrap red">
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-          </svg>
-        </div>
-      </div>
-      <div class="kpi-sub">2 auth errors &bull; 1 timeout</div>
-      <div class="prog-wrap">
-        <div class="prog-header"><span>Error rate</span><span>6.4%</span></div>
-        <div class="prog-track"><div class="prog-fill fill-red" style="width:6.4%"></div></div>
-      </div>
-    </div>
-
   </div>
 
   <!-- ── Health ring row ── -->
-  <div class="section-title">Platform Health</div>
+  <!-- <div class="section-title">Platform Health</div>
   <div class="health-grid" style="margin-bottom:1.75rem;">
 
     <div class="health-card">
@@ -875,7 +877,7 @@
       </div>
     </div>
 
-  </div>
+  </div> -->
 
   <!-- ── Bottom grid ── -->
   <div class="section-title">Object Distribution &amp; Stream Status</div>
@@ -893,35 +895,35 @@
           <div class="obj-dot" style="background:#16a34a;"></div>
           <span class="obj-name">Data Lake Objects (DLO)</span>
           <div class="obj-bar"><div class="obj-bar-fill" style="background:#16a34a;width:59%"></div></div>
-          <span class="obj-count">124</span>
-          <span class="obj-pct">59.0%</span>
+          <span class="obj-count">{{total_dlo}}</span>
+          <!-- <span class="obj-pct">59.0%</span> -->
         </div>
 
         <div class="obj-row">
           <div class="obj-dot" style="background:#7c3aed;"></div>
           <span class="obj-name">Data Model Objects (DMO)</span>
           <div class="obj-bar"><div class="obj-bar-fill" style="background:#7c3aed;width:41%"></div></div>
-          <span class="obj-count">86</span>
-          <span class="obj-pct">41.0%</span>
+          <span class="obj-count">{{total_dmo}}</span>
+          <!-- <span class="obj-pct">41.0%</span> -->
         </div>
 
         <div class="obj-row">
           <div class="obj-dot" style="background:#0891b2;"></div>
           <span class="obj-name">Calculated Insights (CI)</span>
           <div class="obj-bar"><div class="obj-bar-fill" style="background:#0891b2;width:11%"></div></div>
-          <span class="obj-count">23</span>
-          <span class="obj-pct">11.0%</span>
+          <span class="obj-count">{{total_ci}}</span>
+          <!-- <span class="obj-pct">11.0%</span> -->
         </div>
 
         <div class="obj-row">
           <div class="obj-dot" style="background:#d97706;"></div>
-          <span class="obj-name">Profile Objects</span>
+          <span class="obj-name">Segments</span>
           <div class="obj-bar"><div class="obj-bar-fill" style="background:#d97706;width:7.1%"></div></div>
-          <span class="obj-count">15</span>
-          <span class="obj-pct">7.1%</span>
+          <span class="obj-count">{{total_seg}}</span>
+          <!-- <span class="obj-pct">7.1%</span> -->
         </div>
 
-        <div class="obj-row">
+        <!-- <div class="obj-row">
           <div class="obj-dot" style="background:#2563eb;"></div>
           <span class="obj-name">Engagement Objects</span>
           <div class="obj-bar"><div class="obj-bar-fill" style="background:#2563eb;width:24.8%"></div></div>
@@ -935,7 +937,7 @@
           <div class="obj-bar"><div class="obj-bar-fill" style="background:#6b7280;width:27.1%"></div></div>
           <span class="obj-count">57</span>
           <span class="obj-pct">27.1%</span>
-        </div>
+        </div> -->
 
       </div>
     </div>
@@ -1021,7 +1023,7 @@
       <div class="kpi-top">
         <div>
           <div class="kpi-label">Connected Sources</div>
-          <div class="kpi-val">12</div>
+          <div class="kpi-val">{{ total_conn }}</div>
         </div>
         <div class="kpi-icon-wrap blue">
           <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -1037,7 +1039,7 @@
       <div class="kpi-top">
         <div>
           <div class="kpi-label">Active Segments</div>
-          <div class="kpi-val">31</div>
+          <div class="kpi-val">{{ total_seg }}</div>
         </div>
         <div class="kpi-icon-wrap green">
           <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -1070,7 +1072,7 @@
       <div class="kpi-top">
         <div>
           <div class="kpi-label">Einstein AI Models</div>
-          <div class="kpi-val">7 / 9</div>
+          <div class="kpi-val">2 / 2</div>
         </div>
         <div class="kpi-icon-wrap purple">
           <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -1121,7 +1123,7 @@
   <div class="charts-row charts-row-3">
 
     <!-- API Success Rate — line -->
-    <div class="chart-panel">
+    <!-- <div class="chart-panel">
       <div class="chart-head">
         <div>
           <div class="chart-title">API Success Rate</div>
@@ -1133,10 +1135,10 @@
         </div>
       </div>
       <div class="chart-body"><canvas id="chartApiSuccess" height="105"></canvas></div>
-    </div>
+    </div> -->
 
     <!-- Object Type Distribution — doughnut -->
-    <div class="chart-panel">
+    <!-- <div class="chart-panel">
       <div class="chart-head">
         <div>
           <div class="chart-title">Object Distribution</div>
@@ -1146,10 +1148,10 @@
       <div class="chart-body" style="display:flex;align-items:center;justify-content:center;padding:.75rem 1rem 1rem;">
         <canvas id="chartDonut" width="210" height="210"></canvas>
       </div>
-    </div>
+    </div> -->
 
     <!-- DLO vs DMO by Category — grouped bar -->
-    <div class="chart-panel">
+    <!-- <div class="chart-panel">
       <div class="chart-head">
         <div>
           <div class="chart-title">DLO vs DMO by Category</div>
@@ -1161,7 +1163,7 @@
         </div>
       </div>
       <div class="chart-body"><canvas id="chartGroupedBar" height="160"></canvas></div>
-    </div>
+    </div> -->
 
   </div>
 
@@ -1169,7 +1171,7 @@
   <div class="charts-row charts-row-2">
 
     <!-- Data Quality Score Trend -->
-    <div class="chart-panel">
+    <!-- <div class="chart-panel">
       <div class="chart-head">
         <div>
           <div class="chart-title">Data Quality Score Trend</div>
@@ -1182,10 +1184,10 @@
         </div>
       </div>
       <div class="chart-body"><canvas id="chartQuality" height="95"></canvas></div>
-    </div>
+    </div> -->
 
     <!-- Ingestion by Source — stacked bar -->
-    <div class="chart-panel">
+    <!-- <div class="chart-panel">
       <div class="chart-head">
         <div>
           <div class="chart-title">Ingestion Volume by Source</div>
@@ -1200,7 +1202,7 @@
         </div>
       </div>
       <div class="chart-body"><canvas id="chartSourceStack" height="95"></canvas></div>
-    </div>
+    </div> -->
 
   </div>
 
@@ -1340,10 +1342,10 @@
     new Chart(document.getElementById('chartStreamStatus'), {
       type: 'bar',
       data: {
-        labels: ['Active', 'Inactive', 'Warning', 'Error', 'Idle'],
+        labels: ['Active', 'Error'],
         datasets: [{
-          data: [38, 3, 3, 2, 1],
-          backgroundColor: ['#16a34a','#94a3b8','#f59e0b','#ef4444','#cbd5e1'],
+          data: [982, 2],
+          backgroundColor: ['#16a34a','#ef4444'],
           borderRadius: 6,
           barThickness: 22
         }]
@@ -1429,7 +1431,7 @@
       data: {
         labels: ['DLO','DMO','Calc. Insights','Profiles','Engagement','Related'],
         datasets: [{
-          data: [124, 86, 23, 15, 52, 57],
+          data: [20, 20, 20, 15, 52, 57],
           backgroundColor: ['#16a34a','#7c3aed','#0891b2','#d97706','#2563eb','#94a3b8'],
           borderWidth: 2,
           borderColor: '#fff',
