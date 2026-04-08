@@ -139,6 +139,21 @@ def get_data_streams(client_id: str, client_secret: str, api_url: str):
         f"Data 360 endpoint returned {resp.status_code}: {resp.text[:500]}"
     )
 
+def dashboard_functions():
+    kpi_obj = Get_Dashboard_KPIS("a", "b")
+    total_ds, total_dlo, total_dmo, total_ci,active_ci, total_up, total_seg, total_conn = kpi_obj.get_KPIs()
+    active_datastream,error_datastream,today_sum,daily_ingestion_df = kpi_obj.get_informationfrom_datastream_csv()
+    # Extract scalar from pandas Series if needed
+    def _val(v):
+        return v.iloc[0] if hasattr(v, 'iloc') else v
+    active_rate = _val(active_datastream)/_val(total_ds)
+    active_rate = f"{active_rate:.2%}"
+    inactive_rate = _val(error_datastream)/_val(total_ds)
+    inactive_rate = f"{inactive_rate:.2%}"
+    active_ci_rate = _val(active_ci)/_val(total_ci)
+    active_ci_rate = f"{active_ci_rate:.2%}"
+
+    return total_ds, total_dlo, total_dmo, total_ci,active_ci, total_up, total_seg, total_conn,active_datastream,error_datastream,today_sum,active_rate,inactive_rate,active_ci_rate,daily_ingestion_df
 
 # -----------------------------------------------------------------------------
 # Routes — Authentication
@@ -183,21 +198,28 @@ def aws_config():
 @app.route("/dashboard", methods=["GET"])
 @login_required
 def dashboard():
-    kpi_obj = Get_Dashboard_KPIS("a", "b")
-    total_ds, total_dlo, total_dmo, total_ci,active_ci, total_up, total_seg, total_conn = kpi_obj.get_KPIs()
-    active_datastream,error_datastream,today_sum = kpi_obj.get_informationfrom_datastream_csv()
-    # Extract scalar from pandas Series if needed
+    total_ds, total_dlo, total_dmo, total_ci,active_ci, total_up,total_seg,total_conn,active_datastream,error_datastream,today_sum,active_rate,inactive_rate,active_ci_rate,daily_ingestion_df = dashboard_functions()
     def _val(v):
         return v.iloc[0] if hasattr(v, 'iloc') else v
-    active_rate = _val(active_datastream)/_val(total_ds)
-    active_rate = f"{active_rate:.2%}"
-    inactive_rate = _val(error_datastream)/_val(total_ds)
-    inactive_rate = f"{inactive_rate:.2%}"
-    active_ci_rate = _val(active_ci)/_val(total_ci)
-    active_ci_rate = f"{active_ci_rate:.2%}"
+    # kpi_obj = Get_Dashboard_KPIS("a", "b")
+    # total_ds, total_dlo, total_dmo, total_ci,active_ci, total_up, total_seg, total_conn = kpi_obj.get_KPIs()
+    # active_datastream,error_datastream,today_sum = kpi_obj.get_informationfrom_datastream_csv()
+    # # Extract scalar from pandas Series if needed
+    # def _val(v):
+    #     return v.iloc[0] if hasattr(v, 'iloc') else v
+    # active_rate = _val(active_datastream)/_val(total_ds)
+    # active_rate = f"{active_rate:.2%}"
+    # inactive_rate = _val(error_datastream)/_val(total_ds)
+    # inactive_rate = f"{inactive_rate:.2%}"
+    # active_ci_rate = _val(active_ci)/_val(total_ci)
+    # active_ci_rate = f"{active_ci_rate:.2%}"
     #total_up = f"{total_up/1000:.1f}K"
+    ingestion_dates = [str(d) for d in daily_ingestion_df['Date'].tolist()]
+    ingestion_volumes = [float(v) for v in daily_ingestion_df['Total Volume'].tolist()]
     return render_template(
         "dashboard.html",
+        ingestion_dates=ingestion_dates,
+        ingestion_volumes=ingestion_volumes,
         total_ds=_val(total_ds),
         total_dlo=_val(total_dlo),
         total_dmo=_val(total_dmo),

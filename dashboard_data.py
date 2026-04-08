@@ -235,12 +235,29 @@ class Get_Dashboard_KPIS:
         df = pd.read_csv('DataStream.csv')
         active_datastream = df.loc[df['status']=='ACTIVE'].count()
         error_datastream = df.loc[df['status']=='ERROR'].count()
-        df['lastRefreshDate'] = pd.to_datetime(df["lastRefreshDate"], format="mixed").dt.date
+        df['lastRefreshDate'] = pd.to_datetime(df["lastRefreshDate"], format="mixed", errors='coerce').dt.date
+        df['lastProcessedRecords'] = pd.to_numeric(df['lastProcessedRecords'], errors='coerce').fillna(0)
         # Get today's date
         today = pd.Timestamp.today().date()
         # Filter and sum
         today_sum = df.loc[df['lastRefreshDate'] == today, 'lastProcessedRecords'].sum()
-        return active_datastream,error_datastream,today_sum
+        # Get Last 14 Days Volume Ingestion Summary
+        last_14_days = today - pd.Timedelta(days=13)
+        # Filter last 14 days
+        df_filtered = df[df['lastRefreshDate'] >= last_14_days]
+        # Group by date and sum volume
+        result_df = (
+            df_filtered
+            .groupby(df_filtered['lastRefreshDate'])['lastProcessedRecords']
+            .sum()
+            .reset_index()
+        )
+        # Rename columns for clarity
+        result_df.columns = ['Date', 'Total Volume']
+        # Sort by date
+        daily_ingestion_df = result_df.sort_values(by='Date')
+        return active_datastream,error_datastream,today_sum,daily_ingestion_df
+    
     
 if __name__ == "__main__": 
     Get_Dashboard_KPI_obj = Get_Dashboard_KPIS("a","b")
@@ -255,4 +272,4 @@ if __name__ == "__main__":
                                  total_calculated_insights,total_unique_profiles,total_segments)
 
     total_ds,total_dlo,total_dmo,total_ci,active_ci,total_up,total_seg,total_conn = Get_Dashboard_KPI_obj.get_KPIs()                                                                              
-    active_datastream,error_datastream,today_sum = Get_Dashboard_KPI_obj.get_informationfrom_datastream_csv()
+    active_datastream,error_datastream,today_sum,daily_ingestion_df = Get_Dashboard_KPI_obj.get_informationfrom_datastream_csv()
