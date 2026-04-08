@@ -1032,7 +1032,7 @@
           </svg>
         </div>
       </div>
-      <div class="kpi-sub">CRM, CDP, S3, Webhook +8 more</div>
+      <div class="kpi-sub">CRM, S3, AWSRDSServer + 7more</div>
     </div>
 
     <!-- Active Segments -->
@@ -1276,8 +1276,8 @@
     /* ─────────────────────────────────────────────
        1. Daily Ingestion Volume — area + avg line
     ───────────────────────────────────────────── */
-    const rawDays = {{ ingestion_dates | tojson }};
-    const rawVol  = {{ ingestion_volumes | tojson }};
+    // const rawDays = {{ ingestion_dates | tojson }};
+    // const rawVol  = {{ ingestion_volumes | tojson }};
 
     /* Format YYYY-MM-DD → "Apr 05" */
     const days = rawDays.map(d => {
@@ -1285,8 +1285,8 @@
       return dt.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
     });
 
-    /* Convert raw counts to millions (2 dp) */
-    const ingVol = rawVol.map(v => +(v / 1_000_000).toFixed(2));
+    /* Convert raw counts to thousands (2 dp) */
+    const ingVol = rawVol.map(v => +(v / 1_000).toFixed(2));
 
     const ingAvg = Array(ingVol.length).fill(null).map((_,i) => {
       const slice = ingVol.slice(Math.max(0,i-6), i+1);
@@ -1295,20 +1295,28 @@
 
     new Chart(document.getElementById('chartIngestion'), {
       type: 'line',
+      plugins: [ChartDataLabels],
       data: {
         labels: days,
         datasets: [
           {
-            label: 'Records (M)',
+            label: 'Records (K)',
             data: ingVol,
             borderColor: '#16a34a',
             backgroundColor: 'rgba(22,163,74,.08)',
             borderWidth: 2,
-            pointRadius: 3,
-            pointHoverRadius: 5,
+            pointRadius: 4,
+            pointHoverRadius: 6,
             pointBackgroundColor: '#16a34a',
             fill: true,
-            tension: .35
+            tension: .35,
+            datalabels: {
+              anchor: 'top',
+              align: 'top',
+              color: '#16a34a',
+              font: { weight: '600', size: 10 },
+              formatter: v => v.toFixed(1) + 'K'
+            }
           },
           {
             label: '7-day avg',
@@ -1318,18 +1326,20 @@
             borderDash: [5,4],
             pointRadius: 0,
             fill: false,
-            tension: .35
+            tension: .35,
+            datalabels: { display: false }
           }
         ]
       },
       options: {
         responsive: true,
         interaction: { mode: 'index', intersect: false },
+        layout: { padding: { top: 20 } },
         plugins: {
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}M`
+              label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}K`
             }
           }
         },
@@ -1350,7 +1360,7 @@
             beginAtZero: false,
             ticks: {
               ...axisStyle.ticks,
-              callback: v => v.toFixed(1) + 'M'
+              callback: v => v.toFixed(0) + 'K'
             }
           }
         }
