@@ -17,6 +17,7 @@ import os
 import re
 import json
 import pandas as pd
+import ast
 from salesforcecdpconnector.connection import SalesforceCDPConnection
 
 
@@ -258,16 +259,28 @@ class Get_Dashboard_KPIS:
         daily_ingestion_df = result_df.sort_values(by='Date')
         return active_datastream,error_datastream,today_sum,daily_ingestion_df
     
+    def Get_category_datastream_dataframe(self):
+        df = pd.read_csv('DataStream.csv')
+        def Get_category(x):
+            #catg_dict = json.loads(x)
+            #catg_dict = dict(x)
+            catg_dict = ast.literal_eval(x)
+            category_name = catg_dict['category']
+            return category_name
+        df['Type'] = df['dataLakeObjectInfo'].apply(Get_category)
+        filtered_datastream_df = df[['name','Type','totalRecords','status']]
+        filtered_datastream_df.columns = ['Stream Name','Type','Records','Status']
+        return filtered_datastream_df
     
 if __name__ == "__main__": 
     Get_Dashboard_KPI_obj = Get_Dashboard_KPIS("a","b")
     client_id, username, client_secret = Get_Dashboard_KPI_obj.get_secret("studycast-integration-access-secret","us-east-1")
     total_datastreams= Get_Dashboard_KPI_obj.get_data_stream_counts(client_id, username, client_secret)
-    #total_datalakeobjects= Get_Dashboard_KPI_obj.get_data_lakeobject_counts(client_id, username, client_secret)
+    total_datalakeobjects= Get_Dashboard_KPI_obj.get_data_lakeobject_counts(client_id, username, client_secret)
     active_calculated_insights,total_calculated_insights= Get_Dashboard_KPI_obj.get_calculated_insights_counts(client_id, username, client_secret)
     total_unique_profiles = Get_Dashboard_KPI_obj.get_unique_profile_counts(client_id, username, client_secret)
     total_segments = Get_Dashboard_KPI_obj.get_total_segments(client_id, username, client_secret)
-    #df = Get_Dashboard_KPI_obj.get_All_data_data_stream(client_id, username, client_secret)
+    df = Get_Dashboard_KPI_obj.get_All_data_data_stream(client_id, username, client_secret)
     dashboard_df = Get_Dashboard_KPI_obj.create_dashboard_KPI_csv(total_datastreams,1350,active_calculated_insights,
                                  total_calculated_insights,total_unique_profiles,total_segments)
 

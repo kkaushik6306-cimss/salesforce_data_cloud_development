@@ -8,7 +8,8 @@
       "Bash(del \"C:\\\\Users\\\\User\\\\Desktop\\\\Desktop Files\\\\Projects\\\\claude-code-sfdc\\\\templates\\\\aws_secret.html\")",
       "Bash(pip show:*)",
       "Bash(pip install:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(python3:*)"
     ]
   }
 }

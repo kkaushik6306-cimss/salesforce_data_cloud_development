@@ -393,6 +393,10 @@
       vertical-align: middle;
     }
     .status-table tr:last-child td { border-bottom: none; }
+    .status-table td:first-child { white-space: normal; word-break: break-word; max-width: 160px; }
+    .status-table-scroll { overflow-y: auto; max-height: 220px; display: block; }
+    .status-table thead, .status-table tbody tr { display: table; width: 100%; table-layout: fixed; }
+    .status-table thead { width: calc(100% - 0px); }
     .status-dot {
       display: inline-flex;
       align-items: center;
@@ -955,61 +959,39 @@
             <tr>
               <th>Stream Name</th>
               <th>Type</th>
-              <th>Records/h</th>
+              <th>Records</th>
               <th>Status</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td><strong>CRM_Contact_Stream</strong></td>
-              <td style="color:#94a3b8;">DLO</td>
-              <td>42,100</td>
-              <td><span class="status-dot"><span class="dot active"></span>Active</span></td>
-            </tr>
-            <tr>
-              <td><strong>Web_Engagement_DS</strong></td>
-              <td style="color:#94a3b8;">Engagement</td>
-              <td>28,540</td>
-              <td><span class="status-dot"><span class="dot active"></span>Active</span></td>
-            </tr>
-            <tr>
-              <td><strong>Email_Campaign_DS</strong></td>
-              <td style="color:#94a3b8;">Engagement</td>
-              <td>9,800</td>
-              <td><span class="status-dot"><span class="dot active"></span>Active</span></td>
-            </tr>
-            <tr>
-              <td><strong>Order_History_DLO</strong></td>
-              <td style="color:#94a3b8;">DLO</td>
-              <td>18,200</td>
-              <td><span class="status-dot"><span class="dot active"></span>Active</span></td>
-            </tr>
-            <tr>
-              <td><strong>Mobile_App_Events</strong></td>
-              <td style="color:#94a3b8;">Engagement</td>
-              <td>—</td>
-              <td><span class="status-dot"><span class="dot warning"></span>Warning</span></td>
-            </tr>
-            <tr>
-              <td><strong>Legacy_ERP_Feed</strong></td>
-              <td style="color:#94a3b8;">DLO</td>
-              <td>—</td>
-              <td><span class="status-dot"><span class="dot error"></span>Error</span></td>
-            </tr>
-            <tr>
-              <td><strong>Loyalty_Profile_DS</strong></td>
-              <td style="color:#94a3b8;">Profile</td>
-              <td>3,210</td>
-              <td><span class="status-dot"><span class="dot active"></span>Active</span></td>
-            </tr>
-            <tr>
-              <td><strong>Partner_Data_Ingest</strong></td>
-              <td style="color:#94a3b8;">Related</td>
-              <td>—</td>
-              <td><span class="status-dot"><span class="dot idle"></span>Idle</span></td>
-            </tr>
-          </tbody>
         </table>
+        <div class="status-table-scroll">
+          <table class="status-table">
+            <tbody>
+              {% for row in datastream_records %}
+              {% set status_lower = row['Status'] | lower %}
+              {% if status_lower == 'active' %}
+                {% set dot_class = 'active' %}
+                {% set label = 'Active' %}
+              {% elif status_lower == 'error' %}
+                {% set dot_class = 'error' %}
+                {% set label = 'Error' %}
+              {% elif status_lower == 'warning' %}
+                {% set dot_class = 'warning' %}
+                {% set label = 'Warning' %}
+              {% else %}
+                {% set dot_class = 'idle' %}
+                {% set label = row['Status'] | title %}
+              {% endif %}
+              <tr>
+                <td><strong>{{ row['Stream Name'] }}</strong></td>
+                <td style="color:#94a3b8;">{{ row['Type'] }}</td>
+                <td>{{ '{:,}'.format(row['Records'] | int) if row['Records'] else '—' }}</td>
+                <td><span class="status-dot"><span class="dot {{ dot_class }}"></span>{{ label }}</span></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -1276,8 +1258,8 @@
     /* ─────────────────────────────────────────────
        1. Daily Ingestion Volume — area + avg line
     ───────────────────────────────────────────── */
-    // const rawDays = {{ ingestion_dates | tojson }};
-    // const rawVol  = {{ ingestion_volumes | tojson }};
+    const rawDays = {{ ingestion_dates | tojson }};
+    const rawVol  = {{ ingestion_volumes | tojson }};
 
     /* Format YYYY-MM-DD → "Apr 05" */
     const days = rawDays.map(d => {
