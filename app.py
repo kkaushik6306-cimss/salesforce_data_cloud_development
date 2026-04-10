@@ -10,11 +10,13 @@ import boto3
 import pandas as pd
 import requests
 from botocore.exceptions import ClientError
+from salesforcecdpconnector.connection import SalesforceCDPConnection
 from flask import (
     Flask, render_template, request, jsonify, send_file,
     session, redirect, url_for, flash
 )
 from dashboard_data import Get_Dashboard_KPIS
+
 app = Flask(__name__)
 app.secret_key = "sfdc-datastream-secret-key"
 
@@ -58,6 +60,23 @@ def login_required(f):
 # -----------------------------------------------------------------------------
 class SalesforceAuthError(Exception):
     pass
+
+def Get_Data_SFData_Cloud(client_id, username, client_secret, object_api_name):    
+    try:
+        conn = SalesforceCDPConnection(
+            login_url='https://mimit.my.salesforce.com',
+            client_id=client_id,
+            username=username,
+            client_secret=client_secret,
+        )
+        query = f'SELECT * FROM {object_api_name}'
+        print('Here')
+        df = conn.get_pandas_dataframe(query)
+        print(df.head())
+        return df
+    except ClientError as exc:
+        flash(f"Unable to Extract Data: {exc.response['Error']['Message']}", "danger")
+        return redirect(url_for("aws_config"))
 
 
 def get_secret(secret_name: str, region_name: str):
@@ -139,11 +158,13 @@ def get_data_streams(client_id: str, client_secret: str, api_url: str):
         f"Data 360 endpoint returned {resp.status_code}: {resp.text[:500]}"
     )
 
+
 def dashboard_functions():
     kpi_obj = Get_Dashboard_KPIS("a", "b")
     total_ds, total_dlo, total_dmo, total_ci,active_ci, total_up, total_seg, total_conn = kpi_obj.get_KPIs()
     active_datastream,error_datastream,today_sum,daily_ingestion_df = kpi_obj.get_informationfrom_datastream_csv()
     filtered_datastream_df = kpi_obj.Get_category_datastream_dataframe()
+    refreshmode_counts_datastream = kpi_obj.refreshmode_counts_datastream()
     # Extract scalar from pandas Series if needed
     def _val(v):
         return v.iloc[0] if hasattr(v, 'iloc') else v
@@ -154,7 +175,7 @@ def dashboard_functions():
     active_ci_rate = _val(active_ci)/_val(total_ci)
     active_ci_rate = f"{active_ci_rate:.2%}"
 
-    return total_ds, total_dlo, total_dmo, total_ci,active_ci, total_up, total_seg,total_conn,active_datastream,error_datastream,today_sum,active_rate,inactive_rate,active_ci_rate,daily_ingestion_df,filtered_datastream_df
+    return total_ds, total_dlo, total_dmo, total_ci,active_ci, total_up, total_seg,total_conn,active_datastream,error_datastream,today_sum,active_rate,inactive_rate,active_ci_rate,daily_ingestion_df,filtered_datastream_df,refreshmode_counts_datastream
 
 
 
@@ -201,7 +222,7 @@ def aws_config():
 @app.route("/dashboard", methods=["GET"])
 @login_required
 def dashboard():
-    total_ds, total_dlo, total_dmo, total_ci,active_ci, total_up,total_seg,total_conn,active_datastream,error_datastream,today_sum,active_rate,inactive_rate,active_ci_rate,daily_ingestion_df,filtered_datastream_df = dashboard_functions()
+    total_ds, total_dlo, total_dmo, total_ci,active_ci, total_up,total_seg,total_conn,active_datastream,error_datastream,today_sum,active_rate,inactive_rate,active_ci_rate,daily_ingestion_df,filtered_datastream_df,refreshmode_counts_datastream = dashboard_functions()
     print(filtered_datastream_df.head())
     def _val(v):
         return v.iloc[0] if hasattr(v, 'iloc') else v
@@ -223,7 +244,9 @@ def dashboard():
         active_datastream = _val(active_datastream),error_datastream=_val(error_datastream),
         active_rate = active_rate,active_ci_rate=active_ci_rate,
         inactive_rate = _val(inactive_rate),today_sum = _val(today_sum),
-        datastream_records=filtered_datastream_df.to_dict('records')
+        datastream_records=filtered_datastream_df.to_dict('records'),
+        refresh_mode_labels=[str(v) for v in refreshmode_counts_datastream['Refresh_Mode'].tolist()],
+        refresh_mode_values=[int(v) for v in refreshmode_counts_datastream['count'].tolist()],
     )
 
 
@@ -238,7 +261,9 @@ def create_objects():
         "message": "Functionality is under development. We will update you soon.",
     }), 501
 
-
+# -----------------------------------------------------------------------------
+# Routes — Delete Data Objects
+# -----------------------------------------------------------------------------
 @app.route("/delete-stream", methods=["POST"])
 @login_required
 def delete_stream():
@@ -345,7 +370,9 @@ def delete_stream():
             "message": f"Data Stream '{stream_name}' has been deleted successfully.",
         })
 
-
+# -----------------------------------------------------------------------------
+# Routes — Load Secret keys from AWS
+# -----------------------------------------------------------------------------
 @app.route("/load-secret", methods=["POST"])
 @login_required
 def load_secret():
@@ -405,7 +432,9 @@ def load_secret():
     session["api_url"]         = api_url
     return redirect(url_for("data_streams"))
 
-
+# -----------------------------------------------------------------------------
+# Routes — Extract MetaData
+# -----------------------------------------------------------------------------
 @app.route("/data-streams")
 @login_required
 def data_streams():
@@ -446,7 +475,9 @@ def data_streams():
         object_type=session.get("object_type", "DataLakeObject")
     )
 
-
+# -----------------------------------------------------------------------------
+# Routes — Download excel format
+# -----------------------------------------------------------------------------
 @app.route("/download/excel")
 @login_required
 def download_excel():
@@ -491,6 +522,52 @@ def download_excel():
     return send_file(
         buf,
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        as_attachment=True,
+        download_name=filename,
+    )
+
+# -----------------------------------------------------------------------------
+# Routes — Extract Data from Salesforce using Object API Name
+# -----------------------------------------------------------------------------
+@app.route("/extract-data", methods=["POST"])
+@login_required
+def extract_data():
+    object_api_name = request.form.get("object_api_name", "").strip()
+    print(object_api_name)
+    if not object_api_name:
+        return jsonify({"success": False, "message": "Object API name is required."}), 400
+    
+    secret_name     = request.form.get("secret_name",     "").strip()
+    region_name     = request.form.get("region_name",     "").strip()
+    if not secret_name or not region_name:
+        flash("Secret name and AWS region are required.", "danger")
+        return redirect(url_for("aws_config"))
+    try:
+        client_id, username, client_secret = get_secret(secret_name, region_name)
+    except ClientError as exc:
+        flash(f"AWS error: {exc.response['Error']['Message']}", "danger")
+        return redirect(url_for("aws_config"))
+    except Exception as exc:
+        flash(f"Failed to retrieve secret: {exc}", "danger")
+        return redirect(url_for("aws_config"))
+    
+    if not client_id or not client_secret:
+        return jsonify({"success": False, "message": "No active session. Please load your AWS secret first."}), 401
+
+    try:
+        df = Get_Data_SFData_Cloud(client_id, username, client_secret, object_api_name)
+        print(df.head())
+    except Exception as exc:
+        return jsonify({"success": False, "message": str(exc)}), 500
+
+    buf = io.BytesIO()
+    df.to_csv(buf, index=False)
+    buf.seek(0)
+
+    filename = f"{object_api_name}_{datetime.now().strftime('%Y-%m-%d')}.csv"
+    return send_file(
+        buf,
+        mimetype="text/csv",
         as_attachment=True,
         download_name=filename,
     )

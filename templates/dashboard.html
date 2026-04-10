@@ -724,7 +724,14 @@
     <div class="kpi-card">
       <div class="kpi-top">
         <div>
-          <div class="kpi-label">Failed Streams (24h)</div>
+          <div class="kpi-label" style="display:flex;align-items:center;gap:.35rem;">
+            Failed Streams (24h)
+            <a href="#data-stream-status" title="Click Here to see the Failed Data Streams" style="display:inline-flex;align-items:center;color:#ef4444;opacity:.7;transition:opacity .2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.7'">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </a>
+          </div>
           <div class="kpi-val">{{error_datastream}}</div>
         </div>
         <div class="kpi-icon-wrap red">
@@ -740,23 +747,24 @@
       </div>
     </div>
 
-    <!-- Ingestion Rate -->
-    <div class="kpi-card">
-      <div class="kpi-top">
+    <!-- Refresh Mode Distribution -->
+    <div class="kpi-card" style="display:flex;flex-direction:column;gap:.55rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
         <div>
-          <div class="kpi-label">Ingestion Rate</div>
-          <div class="kpi-val">142K</div>
+          <div class="kpi-label">Refresh Mode</div>
+          <div style="font-size:.72rem;color:#94a3b8;margin-top:.1rem;">By stream count</div>
         </div>
-        <div class="kpi-icon-wrap green">
+        <div class="kpi-icon-wrap cyan">
           <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
           </svg>
         </div>
       </div>
-      <div class="kpi-sub">records / hour &bull; peak 210K</div>
-      <div class="prog-wrap">
-        <div class="prog-header"><span>Capacity</span><span>67.6%</span></div>
-        <div class="prog-track"><div class="prog-fill fill-green" style="width:67.6%"></div></div>
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <div style="flex-shrink:0;width:130px;height:130px;position:relative;">
+          <canvas id="chartRefreshMode" width="130" height="130"></canvas>
+        </div>
+        <div id="refreshModeLegend" style="display:flex;flex-direction:column;gap:.3rem;min-width:0;flex:1;"></div>
       </div>
     </div>
 
@@ -892,7 +900,7 @@
     <div class="panel">
       <div class="panel-head">
         <span class="panel-title">Object Type Breakdown</span>
-        <span style="font-size:.72rem;color:#94a3b8;">Total: 210</span>
+        <!-- <span style="font-size:.72rem;color:#94a3b8;">Total: 210</span> -->
       </div>
       <div class="panel-body">
 
@@ -948,10 +956,10 @@
     </div>
 
     <!-- Data stream status panel -->
-    <div class="panel">
+    <div class="panel" id="data-stream-status" style="scroll-margin-top:72px;">
       <div class="panel-head">
         <span class="panel-title">Data Stream Status</span>
-        <span style="font-size:.72rem;color:#94a3b8;">Last synced 4 min ago</span>
+        <span style="font-size:.72rem;color:#94a3b8;">Error Status</span>
       </div>
       <div class="panel-body" style="padding:0 1.25rem;">
         <table class="status-table">
@@ -1195,6 +1203,14 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script type="application/json" id="tpl-data">
+{
+  "ingestion_dates":    {{ ingestion_dates    | tojson }},
+  "ingestion_volumes":  {{ ingestion_volumes  | tojson }},
+  "refresh_mode_labels": {{ refresh_mode_labels | tojson }},
+  "refresh_mode_values": {{ refresh_mode_values | tojson }}
+}
+</script>
 <script>
   /* Refresh button */
   function simulateRefresh() {
@@ -1245,6 +1261,8 @@
 
   function initCharts() {
 
+    const _tpl      = JSON.parse(document.getElementById('tpl-data').textContent);
+
     const gridColor  = 'rgba(226,232,240,.7)';
     const tickColor  = '#94a3b8';
 
@@ -1258,8 +1276,8 @@
     /* ─────────────────────────────────────────────
        1. Daily Ingestion Volume — area + avg line
     ───────────────────────────────────────────── */
-    const rawDays = {{ ingestion_dates | tojson }};
-    const rawVol  = {{ ingestion_volumes | tojson }};
+    const rawDays = _tpl.ingestion_dates;
+    const rawVol  = _tpl.ingestion_volumes;
 
     /* Format YYYY-MM-DD → "Apr 05" */
     const days = rawDays.map(d => {
@@ -1395,7 +1413,7 @@
     ───────────────────────────────────────────── */
     const apiRate = [99.1,98.7,99.3,99.5,99.0,98.9,99.2,99.4,99.6,99.1,99.3,99.5,99.0,99.2];
 
-    new Chart(document.getElementById('chartApiSuccess'), {
+    if (document.getElementById('chartApiSuccess')) new Chart(document.getElementById('chartApiSuccess'), {
       type: 'line',
       data: {
         labels: days,
@@ -1447,7 +1465,7 @@
     /* ─────────────────────────────────────────────
        4. Object Distribution — doughnut
     ───────────────────────────────────────────── */
-    new Chart(document.getElementById('chartDonut'), {
+    if (document.getElementById('chartDonut')) new Chart(document.getElementById('chartDonut'), {
       type: 'doughnut',
       data: {
         labels: ['DLO','DMO','Calc. Insights','Profiles','Engagement','Related'],
@@ -1486,7 +1504,7 @@
     /* ─────────────────────────────────────────────
        5. DLO vs DMO by Category — grouped bar
     ───────────────────────────────────────────── */
-    new Chart(document.getElementById('chartGroupedBar'), {
+    if (document.getElementById('chartGroupedBar')) new Chart(document.getElementById('chartGroupedBar'), {
       type: 'bar',
       data: {
         labels: ['Profile', 'Engagement', 'Related'],
@@ -1530,7 +1548,7 @@
        6. Data Quality Score Trend — multi-line
     ───────────────────────────────────────────── */
     const wks = ['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12'];
-    new Chart(document.getElementById('chartQuality'), {
+    if (document.getElementById('chartQuality')) new Chart(document.getElementById('chartQuality'), {
       type: 'line',
       data: {
         labels: wks,
@@ -1595,7 +1613,7 @@
        7. Ingestion by Source — stacked bar
     ───────────────────────────────────────────── */
     const srcDays = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-    new Chart(document.getElementById('chartSourceStack'), {
+    if (document.getElementById('chartSourceStack')) new Chart(document.getElementById('chartSourceStack'), {
       type: 'bar',
       data: {
         labels: srcDays,
@@ -1624,6 +1642,57 @@
                ticks: { ...axisStyle.ticks, callback: v => v + 'K' } }
         }
       }
+    });
+
+    /* ─────────────────────────────────────────────
+       8. Refresh Mode Distribution — pie
+    ───────────────────────────────────────────── */
+    const rmLabels = _tpl.refresh_mode_labels;
+    const rmValues = _tpl.refresh_mode_values;
+    const rmColors = ['#16a34a','#2563eb','#d97706','#7c3aed','#0891b2','#ef4444','#94a3b8'];
+
+    new Chart(document.getElementById('chartRefreshMode'), {
+      type: 'pie',
+      plugins: [ChartDataLabels],
+      data: {
+        labels: rmLabels,
+        datasets: [{
+          data: rmValues,
+          backgroundColor: rmColors.slice(0, rmLabels.length),
+          borderWidth: 2,
+          borderColor: '#fff',
+          hoverOffset: 5
+        }]
+      },
+      options: {
+        responsive: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.label}: ${ctx.parsed} streams`
+            }
+          },
+          datalabels: {
+            color: '#fff',
+            font: { weight: '700', size: 10 },
+            formatter: (value) => value
+          }
+        }
+      }
+    });
+
+    /* Build inline legend */
+    const legendEl = document.getElementById('refreshModeLegend');
+    rmLabels.forEach((lbl, i) => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:.4rem;min-width:0;';
+      row.innerHTML = `
+        <span style="flex-shrink:0;width:9px;height:9px;border-radius:50%;background:${rmColors[i % rmColors.length]};display:inline-block;"></span>
+        <span style="font-size:.72rem;color:#475569;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;" title="${lbl}">${lbl}</span>
+        <span style="flex-shrink:0;font-size:.72rem;font-weight:700;color:#1e293b;">${rmValues[i]}</span>
+      `;
+      legendEl.appendChild(row);
     });
 
   } /* end initCharts */

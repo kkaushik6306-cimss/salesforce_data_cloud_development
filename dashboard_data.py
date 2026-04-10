@@ -270,7 +270,22 @@ class Get_Dashboard_KPIS:
         df['Type'] = df['dataLakeObjectInfo'].apply(Get_category)
         filtered_datastream_df = df[['name','Type','totalRecords','status']]
         filtered_datastream_df.columns = ['Stream Name','Type','Records','Status']
+        filtered_datastream_df = filtered_datastream_df.loc[filtered_datastream_df['Status']=='ERROR']
+        filtered_datastream_df.to_csv('DSCategory.csv')
         return filtered_datastream_df
+    
+    def refreshmode_counts_datastream(self):
+        df = pd.read_csv('DataStream.csv')
+        def Get_refresh_mode(x):
+            data = ast.literal_eval(x)
+            refresh_mode = data.get('refreshMode')
+            return refresh_mode
+        df['Refresh_Mode'] = df['refreshConfig'].apply(Get_refresh_mode)
+        refresh_mode_df = df[['name','Refresh_Mode']]
+        refresh_mode_df.columns = ['Stream Name','Refresh_Mode']
+        new_df = refresh_mode_df.groupby('Refresh_Mode')['Stream Name'].count().reset_index(name='count')
+        new_df.to_csv('Refresh_Mode.csv')
+        return new_df
     
 if __name__ == "__main__": 
     Get_Dashboard_KPI_obj = Get_Dashboard_KPIS("a","b")
@@ -286,3 +301,6 @@ if __name__ == "__main__":
 
     total_ds,total_dlo,total_dmo,total_ci,active_ci,total_up,total_seg,total_conn = Get_Dashboard_KPI_obj.get_KPIs()                                                                              
     active_datastream,error_datastream,today_sum,daily_ingestion_df = Get_Dashboard_KPI_obj.get_informationfrom_datastream_csv()
+    filtered_datastream_df = Get_Dashboard_KPI_obj.Get_category_datastream_dataframe()
+    new_df = Get_Dashboard_KPI_obj.refreshmode_counts_datastream()
+    print('Done')
