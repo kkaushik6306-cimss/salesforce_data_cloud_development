@@ -242,7 +242,7 @@ def dashboard():
         total_up=_val(total_up),
         total_seg=_val(total_seg),
         total_conn=_val(total_conn),
-        active_datastream = _val(active_datastream),error_datastream=_val(error_datastream),
+        active_datastream = int(_val(active_datastream)),error_datastream=int(_val(error_datastream)),
         active_rate = active_rate,active_ci_rate=active_ci_rate,
         inactive_rate = _val(inactive_rate),today_sum = _val(today_sum),
         datastream_records=filtered_datastream_df.to_dict('records'),

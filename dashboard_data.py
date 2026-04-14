@@ -257,12 +257,13 @@ class Get_Dashboard_KPIS:
             response = s3.get_object(Bucket=bucket_name, Key=file_key)
             csv_content = response['Body'].read().decode('utf-8')
             df = pd.read_csv(StringIO(csv_content))
-            active_datastream = df.loc[df['status']=='ACTIVE'].count()
-            error_datastream = df.loc[df['status']=='ERROR'].count()
+            active_datastream = df.loc[df['status']=='ACTIVE'].count()['status']
+            error_datastream = df.loc[df['status']=='ERROR'].count()['status']
             df['lastRefreshDate'] = pd.to_datetime(df["lastRefreshDate"], format="mixed", errors='coerce').dt.date
             df['lastProcessedRecords'] = pd.to_numeric(df['lastProcessedRecords'], errors='coerce').fillna(0)
             today = pd.Timestamp.today().date()
             today_sum = df.loc[df['lastRefreshDate'] == today, 'lastProcessedRecords'].sum()
+            print(today_sum)
             last_14_days = today - pd.Timedelta(days=13)
             df_filtered = df[df['lastRefreshDate'] >= last_14_days]
             result_df = (
@@ -273,6 +274,7 @@ class Get_Dashboard_KPIS:
             )
             result_df.columns = ['Date', 'Total Volume']
             daily_ingestion_df = result_df.sort_values(by='Date')
+            daily_ingestion_df.to_csv('daily_ingestion_df.csv',index=False)
             return active_datastream,error_datastream,today_sum,daily_ingestion_df
         except Exception as e:
             logger.error("Error fetching datastream CSV from S3: %s", e, exc_info=True)
@@ -296,9 +298,8 @@ class Get_Dashboard_KPIS:
             df['Type'] = df['dataLakeObjectInfo'].apply(Get_category)
             filtered_datastream_df = df[['name','Type','totalRecords','status']]
             filtered_datastream_df.columns = ['Stream Name','Type','Records','Status']
-            filtered_datastream_df = filtered_datastream_df.loc[filtered_datastream_df['Status']=='ERROR']
-            filtered_datastream_df.to_csv('DSCategory.csv')
-            return filtered_datastream_df
+            error_datastream_df = filtered_datastream_df.loc[filtered_datastream_df['Status']=='ERROR']
+            return error_datastream_df
         except Exception as e:
             logger.error("Error fetching category datastream from S3: %s", e, exc_info=True)
             print(f"Error: {e}")
@@ -388,4 +389,5 @@ if __name__ == "__main__":
     active_datastream,error_datastream,today_sum,daily_ingestion_df = Get_Dashboard_KPI_obj.get_informationfrom_datastream_csv()
     filtered_datastream_df = Get_Dashboard_KPI_obj.Get_category_datastream_dataframe()
     new_df = Get_Dashboard_KPI_obj.refreshmode_counts_datastream()
+    Get_Dashboard_KPI_obj.upload_csv_s3bucket()
     print('Done')

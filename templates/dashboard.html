@@ -1205,10 +1205,12 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script type="application/json" id="tpl-data">
 {
-  "ingestion_dates":    {{ ingestion_dates    | tojson }},
-  "ingestion_volumes":  {{ ingestion_volumes  | tojson }},
-  "refresh_mode_labels": {{ refresh_mode_labels | tojson }},
-  "refresh_mode_values": {{ refresh_mode_values | tojson }}
+  "ingestion_dates":      {{ ingestion_dates      | tojson }},
+  "ingestion_volumes":    {{ ingestion_volumes    | tojson }},
+  "refresh_mode_labels":  {{ refresh_mode_labels  | tojson }},
+  "refresh_mode_values":  {{ refresh_mode_values  | tojson }},
+  "active_datastream":    {{ active_datastream    | tojson }},
+  "error_datastream":     {{ error_datastream     | tojson }}
 }
 </script>
 <script>
@@ -1376,7 +1378,7 @@
       data: {
         labels: ['Active', 'Error'],
         datasets: [{
-          data: [982, 2],
+          data: [_tpl.active_datastream, _tpl.error_datastream],
           backgroundColor: ['#16a34a','#ef4444'],
           borderRadius: 6,
           barThickness: 22
