@@ -6,6 +6,7 @@ Each function is called from the /api/dashboard/counts Flask route
 when the user opens the dashboard page.
 """
 
+import logging
 import requests
 from flask import (
     Flask, render_template, request, jsonify, send_file,
@@ -22,6 +23,8 @@ from salesforcecdpconnector.connection import SalesforceCDPConnection
 from botocore.exceptions import ClientError
 from io import StringIO
 from botocore.exceptions import NoCredentialsError
+
+logger = logging.getLogger(__name__)
 
 SALESFORCE_LOGIN_URL = os.getenv("SALESFORCE_LOGIN_URL", "https://mimit.my.salesforce.com")
 TOKEN_PATH           = "/services/oauth2/token"      
@@ -211,8 +214,8 @@ class Get_Dashboard_KPIS:
                                  total_calculated_insights,total_unique_profiles,total_segments):
         dashboard_KPIs = {}
         dashboard_KPIs["Total DS"] = total_datastreams
-        dashboard_KPIs["Total DLO"] = 1350
-        dashboard_KPIs["Total DMO"] = 1625
+        dashboard_KPIs["Total DLO"] = total_datalakeobjects
+        dashboard_KPIs["Total DMO"] = 1665
         dashboard_KPIs["Total CI"]= total_calculated_insights
         dashboard_KPIs["Active CI"]= active_calculated_insights
         dashboard_KPIs["Total UP"] = total_unique_profiles
@@ -221,61 +224,85 @@ class Get_Dashboard_KPIS:
         dashboard_df = pd.DataFrame([dashboard_KPIs])                       
         dashboard_df.to_csv('Dashboard.csv',index=False)
         return dashboard_df
-        
+
+    #Get Dashboard KPIS___________________________________________________________    
     def get_KPIs(self):
-        df = pd.read_csv('Dashboard.csv')
-        total_ds = df['Total DS']
-        total_dlo = df['Total DLO']
-        total_dmo = df['Total DMO']
-        total_ci = df['Total CI']
-        active_ci = df['Active CI']
-        total_up = df['Total UP']
-        total_seg = df['Total Seg']
-        total_conn = df['Total Connections']
-        return total_ds,total_dlo,total_dmo,total_ci,active_ci,total_up,total_seg,total_conn
+        #df = pd.read_csv('Dashboard.csv')
+        s3 = boto3.client('s3')
+        bucket_name = 'datacloud-heroku-appliation'
+        file_key = 'dashboard_files/Dashboard.csv'
+        try:
+            response = s3.get_object(Bucket=bucket_name, Key=file_key)
+            csv_content = response['Body'].read().decode('utf-8')
+            df = pd.read_csv(StringIO(csv_content))
+            total_ds = df['Total DS']
+            total_dlo = df['Total DLO']
+            total_dmo = df['Total DMO']
+            total_ci = df['Total CI']
+            active_ci = df['Active CI']
+            total_up = df['Total UP']
+            total_seg = df['Total Seg']
+            total_conn = df['Total Connections']
+            return total_ds,total_dlo,total_dmo,total_ci,active_ci,total_up,total_seg,total_conn
+        except Exception as e:
+            logger.error("Error fetching KPIs from S3: %s", e, exc_info=True)
+            print(f"Error: {e}")
 
     def get_informationfrom_datastream_csv(self):
-        df = pd.read_csv('DataStream.csv')
-        active_datastream = df.loc[df['status']=='ACTIVE'].count()
-        error_datastream = df.loc[df['status']=='ERROR'].count()
-        df['lastRefreshDate'] = pd.to_datetime(df["lastRefreshDate"], format="mixed", errors='coerce').dt.date
-        df['lastProcessedRecords'] = pd.to_numeric(df['lastProcessedRecords'], errors='coerce').fillna(0)
-        # Get today's date
-        today = pd.Timestamp.today().date()
-        # Filter and sum
-        today_sum = df.loc[df['lastRefreshDate'] == today, 'lastProcessedRecords'].sum()
-        # Get Last 14 Days Volume Ingestion Summary
-        last_14_days = today - pd.Timedelta(days=13)
-        # Filter last 14 days
-        df_filtered = df[df['lastRefreshDate'] >= last_14_days]
-        # Group by date and sum volume
-        result_df = (
-            df_filtered
-            .groupby(df_filtered['lastRefreshDate'])['lastProcessedRecords']
-            .sum()
-            .reset_index()
-        )
-        # Rename columns for clarity
-        result_df.columns = ['Date', 'Total Volume']
-        # Sort by date
-        daily_ingestion_df = result_df.sort_values(by='Date')
-        return active_datastream,error_datastream,today_sum,daily_ingestion_df
-    
+        #df = pd.read_csv('DataStream.csv')
+        s3 = boto3.client('s3')
+        bucket_name = 'datacloud-heroku-appliation'
+        file_key = 'dashboard_files/DataStream.csv'
+        try:
+            response = s3.get_object(Bucket=bucket_name, Key=file_key)
+            csv_content = response['Body'].read().decode('utf-8')
+            df = pd.read_csv(StringIO(csv_content))
+            active_datastream = df.loc[df['status']=='ACTIVE'].count()
+            error_datastream = df.loc[df['status']=='ERROR'].count()
+            df['lastRefreshDate'] = pd.to_datetime(df["lastRefreshDate"], format="mixed", errors='coerce').dt.date
+            df['lastProcessedRecords'] = pd.to_numeric(df['lastProcessedRecords'], errors='coerce').fillna(0)
+            today = pd.Timestamp.today().date()
+            today_sum = df.loc[df['lastRefreshDate'] == today, 'lastProcessedRecords'].sum()
+            last_14_days = today - pd.Timedelta(days=13)
+            df_filtered = df[df['lastRefreshDate'] >= last_14_days]
+            result_df = (
+                df_filtered
+                .groupby(df_filtered['lastRefreshDate'])['lastProcessedRecords']
+                .sum()
+                .reset_index()
+            )
+            result_df.columns = ['Date', 'Total Volume']
+            daily_ingestion_df = result_df.sort_values(by='Date')
+            return active_datastream,error_datastream,today_sum,daily_ingestion_df
+        except Exception as e:
+            logger.error("Error fetching datastream CSV from S3: %s", e, exc_info=True)
+            print(f"Error: {e}")
+
     def Get_category_datastream_dataframe(self):
-        df = pd.read_csv('DataStream.csv')
-        def Get_category(x):
-            #catg_dict = json.loads(x)
-            #catg_dict = dict(x)
-            catg_dict = ast.literal_eval(x)
-            category_name = catg_dict['category']
-            return category_name
-        df['Type'] = df['dataLakeObjectInfo'].apply(Get_category)
-        filtered_datastream_df = df[['name','Type','totalRecords','status']]
-        filtered_datastream_df.columns = ['Stream Name','Type','Records','Status']
-        filtered_datastream_df = filtered_datastream_df.loc[filtered_datastream_df['Status']=='ERROR']
-        filtered_datastream_df.to_csv('DSCategory.csv')
-        return filtered_datastream_df
-    
+        #df = pd.read_csv('DataStream.csv')
+        s3 = boto3.client('s3')
+        bucket_name = 'datacloud-heroku-appliation'
+        file_key = 'dashboard_files/DataStream.csv'
+        try:
+            response = s3.get_object(Bucket=bucket_name, Key=file_key)
+            csv_content = response['Body'].read().decode('utf-8')
+            df = pd.read_csv(StringIO(csv_content)) 
+            def Get_category(x):
+                #catg_dict = json.loads(x)
+                #catg_dict = dict(x)
+                catg_dict = ast.literal_eval(x)
+                category_name = catg_dict['category']
+                return category_name
+            df['Type'] = df['dataLakeObjectInfo'].apply(Get_category)
+            filtered_datastream_df = df[['name','Type','totalRecords','status']]
+            filtered_datastream_df.columns = ['Stream Name','Type','Records','Status']
+            filtered_datastream_df = filtered_datastream_df.loc[filtered_datastream_df['Status']=='ERROR']
+            filtered_datastream_df.to_csv('DSCategory.csv')
+            return filtered_datastream_df
+        except Exception as e:
+            logger.error("Error fetching category datastream from S3: %s", e, exc_info=True)
+            print(f"Error: {e}")
+
     def refreshmode_counts_datastream(self):
         #df = pd.read_csv('DataStream.csv')
         # Initialize S3 client
@@ -297,8 +324,9 @@ class Get_Dashboard_KPIS:
             new_df = refresh_mode_df.groupby('Refresh_Mode')['Stream Name'].count().reset_index(name='count')
             return new_df
         except Exception as e:
+            logger.error("Error computing refresh mode counts: %s", e, exc_info=True)
             print(f"Error: {e}")
- 
+
     def upload_csv_s3bucket(self):
         # ---------- CONFIGURATION ----------
         
@@ -333,10 +361,13 @@ class Get_Dashboard_KPIS:
             print("File uploaded successfully to S3!")
 
         except FileNotFoundError:
+            logger.error("File not found during S3 upload.")
             print("The file was not found.")
         except NoCredentialsError:
+            logger.error("AWS credentials not available for S3 upload.")
             print("AWS credentials not available.")
         except ClientError as e:
+            logger.error("AWS Client Error during S3 upload: %s", e, exc_info=True)
             print(f"AWS Client Error: {e}")
 
 
@@ -350,7 +381,7 @@ if __name__ == "__main__":
     total_unique_profiles = Get_Dashboard_KPI_obj.get_unique_profile_counts(client_id, username, client_secret)
     total_segments = Get_Dashboard_KPI_obj.get_total_segments(client_id, username, client_secret)
     df = Get_Dashboard_KPI_obj.get_All_data_data_stream(client_id, username, client_secret)
-    dashboard_df = Get_Dashboard_KPI_obj.create_dashboard_KPI_csv(total_datastreams,1350,active_calculated_insights,
+    dashboard_df = Get_Dashboard_KPI_obj.create_dashboard_KPI_csv(total_datastreams,total_datalakeobjects,active_calculated_insights,
                                  total_calculated_insights,total_unique_profiles,total_segments)
 
     total_ds,total_dlo,total_dmo,total_ci,active_ci,total_up,total_seg,total_conn = Get_Dashboard_KPI_obj.get_KPIs()                                                                              

@@ -75,6 +75,7 @@ def Get_Data_SFData_Cloud(client_id, username, client_secret, object_api_name):
         print(df.head())
         return df
     except ClientError as exc:
+        app.logger.error("ClientError in Get_Data_SFData_Cloud: %s", exc.response['Error']['Message'], exc_info=True)
         flash(f"Unable to Extract Data: {exc.response['Error']['Message']}", "danger")
         return redirect(url_for("aws_config"))
 
@@ -297,6 +298,7 @@ def delete_stream():
         instance_url = resp.json()["instance_url"]
         
     except Exception as exc:
+        app.logger.error("Authentication failed in delete_stream: %s", exc, exc_info=True)
         return jsonify({"success": False, "title": "Authentication Failed",
                         "message": str(exc)}), 500
     if delete_dlo:
@@ -417,9 +419,11 @@ def load_secret():
     try:
         client_id, username, client_secret = get_secret(secret_name, region_name)
     except ClientError as exc:
+        app.logger.error("AWS ClientError in load_secret: %s", exc.response['Error']['Message'], exc_info=True)
         flash(f"AWS error: {exc.response['Error']['Message']}", "danger")
         return redirect(url_for("aws_config"))
     except Exception as exc:
+        app.logger.error("Error retrieving secret in load_secret: %s", exc, exc_info=True)
         flash(f"Failed to retrieve secret: {exc}", "danger")
         return redirect(url_for("aws_config"))
 
@@ -465,6 +469,7 @@ def data_streams():
 
             return jsonify({"success": True, "data": payload})
         except Exception as exc:
+            app.logger.error("Error fetching data streams: %s", exc, exc_info=True)
             return jsonify({"success": False, "error": str(exc)}), 500
 
     # Page render
@@ -545,12 +550,14 @@ def extract_data():
     try:
         client_id, username, client_secret = get_secret(secret_name, region_name)
     except ClientError as exc:
+        app.logger.error("AWS ClientError in extract_data: %s", exc.response['Error']['Message'], exc_info=True)
         flash(f"AWS error: {exc.response['Error']['Message']}", "danger")
         return redirect(url_for("aws_config"))
     except Exception as exc:
+        app.logger.error("Error retrieving secret in extract_data: %s", exc, exc_info=True)
         flash(f"Failed to retrieve secret: {exc}", "danger")
         return redirect(url_for("aws_config"))
-    
+
     if not client_id or not client_secret:
         return jsonify({"success": False, "message": "No active session. Please load your AWS secret first."}), 401
 
@@ -558,6 +565,7 @@ def extract_data():
         df = Get_Data_SFData_Cloud(client_id, username, client_secret, object_api_name)
         print(df.head())
     except Exception as exc:
+        app.logger.error("Error extracting data from Salesforce in extract_data: %s", exc, exc_info=True)
         return jsonify({"success": False, "message": str(exc)}), 500
 
     buf = io.BytesIO()
