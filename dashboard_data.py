@@ -19,7 +19,9 @@ import json
 import pandas as pd
 import ast
 from salesforcecdpconnector.connection import SalesforceCDPConnection
-
+from botocore.exceptions import ClientError
+from io import StringIO
+from botocore.exceptions import NoCredentialsError
 
 SALESFORCE_LOGIN_URL = os.getenv("SALESFORCE_LOGIN_URL", "https://mimit.my.salesforce.com")
 TOKEN_PATH           = "/services/oauth2/token"      
@@ -275,18 +277,70 @@ class Get_Dashboard_KPIS:
         return filtered_datastream_df
     
     def refreshmode_counts_datastream(self):
-        df = pd.read_csv('DataStream.csv')
-        def Get_refresh_mode(x):
-            data = ast.literal_eval(x)
-            refresh_mode = data.get('refreshMode')
-            return refresh_mode
-        df['Refresh_Mode'] = df['refreshConfig'].apply(Get_refresh_mode)
-        refresh_mode_df = df[['name','Refresh_Mode']]
-        refresh_mode_df.columns = ['Stream Name','Refresh_Mode']
-        new_df = refresh_mode_df.groupby('Refresh_Mode')['Stream Name'].count().reset_index(name='count')
-        new_df.to_csv('Refresh_Mode.csv')
-        return new_df
-    
+        #df = pd.read_csv('DataStream.csv')
+        # Initialize S3 client
+        s3 = boto3.client('s3')
+        bucket_name = 'datacloud-heroku-appliation'
+        file_key = 'dashboard_files/DataStream.csv'
+
+        try:
+            response = s3.get_object(Bucket=bucket_name, Key=file_key)
+            csv_content = response['Body'].read().decode('utf-8')
+            df = pd.read_csv(StringIO(csv_content))
+            def Get_refresh_mode(x):
+                data = ast.literal_eval(x)
+                refresh_mode = data.get('refreshMode')
+                return refresh_mode
+            df['Refresh_Mode'] = df['refreshConfig'].apply(Get_refresh_mode)
+            refresh_mode_df = df[['name','Refresh_Mode']]
+            refresh_mode_df.columns = ['Stream Name','Refresh_Mode']
+            new_df = refresh_mode_df.groupby('Refresh_Mode')['Stream Name'].count().reset_index(name='count')
+            return new_df
+        except Exception as e:
+            print(f"Error: {e}")
+ 
+    def upload_csv_s3bucket(self):
+        # ---------- CONFIGURATION ----------
+        
+        # -----------------------------------
+        AWS_ACCESS_KEY = ""
+        AWS_SECRET_KEY = ""
+        REGION = ""
+        try:
+            s3_client = boto3.client(
+                "s3",
+                aws_access_key_id=AWS_ACCESS_KEY,
+                aws_secret_access_key=AWS_SECRET_KEY,
+                region_name=REGION
+            )
+            ##Dashboard.csv
+            BUCKET_NAME = "datacloud-heroku-appliation"
+            LOCAL_FILE_PATH = "Dashboard.csv"
+            S3_FILE_PATH = "dashboard_files/Dashboard.csv"
+            s3_client.upload_file(LOCAL_FILE_PATH, BUCKET_NAME, S3_FILE_PATH)
+            ##DataStream.csv
+            LOCAL_FILE_PATH = "DataStream.csv"
+            S3_FILE_PATH = "dashboard_files/DataStream.csv"
+            s3_client.upload_file(LOCAL_FILE_PATH, BUCKET_NAME, S3_FILE_PATH)
+            ##DSCategory.csv
+            LOCAL_FILE_PATH = "DSCategory.csv"
+            S3_FILE_PATH = "dashboard_files/DatDSCategoryaStream.csv"
+            s3_client.upload_file(LOCAL_FILE_PATH, BUCKET_NAME, S3_FILE_PATH)
+            ##Refresh_Mode.csv
+            LOCAL_FILE_PATH = "Refresh_Mode.csv"
+            S3_FILE_PATH = "dashboard_files/Refresh_Mode.csv"
+            s3_client.upload_file(LOCAL_FILE_PATH, BUCKET_NAME, S3_FILE_PATH)
+            print("File uploaded successfully to S3!")
+
+        except FileNotFoundError:
+            print("The file was not found.")
+        except NoCredentialsError:
+            print("AWS credentials not available.")
+        except ClientError as e:
+            print(f"AWS Client Error: {e}")
+
+
+        
 if __name__ == "__main__": 
     Get_Dashboard_KPI_obj = Get_Dashboard_KPIS("a","b")
     client_id, username, client_secret = Get_Dashboard_KPI_obj.get_secret("studycast-integration-access-secret","us-east-1")
