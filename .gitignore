@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+DataStream.csv
+Dashboard.csv
+daily_ingestion_df.csv
+output_data/

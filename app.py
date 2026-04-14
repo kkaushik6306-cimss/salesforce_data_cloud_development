@@ -173,7 +173,7 @@ def dashboard_functions():
     active_rate = f"{active_rate:.2%}"
     inactive_rate = _val(error_datastream)/_val(total_ds)
     inactive_rate = f"{inactive_rate:.2%}"
-    active_ci_rate = _val(active_ci)/_val(total_ci)
+    active_ci_rate = _val(active_ci)/_val(total_ci)                                                    
     active_ci_rate = f"{active_ci_rate:.2%}"
 
     return total_ds, total_dlo, total_dmo, total_ci,active_ci, total_up, total_seg,total_conn,active_datastream,error_datastream,today_sum,active_rate,inactive_rate,active_ci_rate,daily_ingestion_df,filtered_datastream_df,refreshmode_counts_datastream
