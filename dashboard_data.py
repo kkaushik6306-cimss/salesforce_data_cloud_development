@@ -263,7 +263,7 @@ class Get_Dashboard_KPIS:
             df['lastProcessedRecords'] = pd.to_numeric(df['lastProcessedRecords'], errors='coerce').fillna(0)
             today = pd.Timestamp.today().date()
             today_sum = df.loc[df['lastRefreshDate'] == today, 'lastProcessedRecords'].sum()
-            print(today_sum)
+            #print(today_sum)
             last_14_days = today - pd.Timedelta(days=13)
             df_filtered = df[df['lastRefreshDate'] >= last_14_days]
             result_df = (

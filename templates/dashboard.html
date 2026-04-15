@@ -91,6 +91,14 @@
       transition: color .2s;
     }
     .nav-link-plain:hover { color: #fff; }
+    .version-badge {
+      font-size: .68rem; font-weight: 600; letter-spacing: .04em;
+      color: rgba(255,255,255,.45);
+      background: rgba(255,255,255,.09);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 20px;
+      padding: .2rem .6rem;
+    }
     .live-badge {
       display: flex;
       align-items: center;
@@ -542,6 +550,7 @@
       Configure
     </a>
     <a href="/logout" class="nav-link-plain">Sign out &rarr;</a>
+    <span class="version-badge">v{{ app_version }}</span>
   </div>
 </nav>
 

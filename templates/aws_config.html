@@ -73,6 +73,14 @@
       transition: color .2s;
     }
     .signout-link:hover { color: #fff; }
+    .version-badge {
+      font-size: .68rem; font-weight: 600; letter-spacing: .04em;
+      color: rgba(255,255,255,.5);
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 20px;
+      padding: .18rem .55rem;
+    }
 
     /* ── Step bar ── */
     .step-bar {
@@ -952,6 +960,7 @@
   <!-- Header band -->
   <div class="card-header-band">
     <div class="header-actions">
+      <span class="version-badge">v{{ app_version }}</span>
       <a href="/dashboard" target="_blank" class="dashboard-btn">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round"

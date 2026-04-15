@@ -21,6 +21,15 @@ app = Flask(__name__)
 app.secret_key = "sfdc-datastream-secret-key"
 
 # -----------------------------------------------------------------------------
+# Version — update here to reflect the new version everywhere
+# -----------------------------------------------------------------------------
+APP_VERSION = "1.1"
+
+@app.context_processor
+def inject_version():
+    return {"app_version": APP_VERSION}
+
+# -----------------------------------------------------------------------------
 # Config
 # -----------------------------------------------------------------------------
 SALESFORCE_LOGIN_URL = os.getenv("SALESFORCE_LOGIN_URL", "https://mimit.my.salesforce.com")
