@@ -329,19 +329,9 @@ class Get_Dashboard_KPIS:
             print(f"Error: {e}")
 
     def upload_csv_s3bucket(self):
-        # ---------- CONFIGURATION ----------
-        
-        # -----------------------------------
-        AWS_ACCESS_KEY = ""
-        AWS_SECRET_KEY = ""
-        REGION = ""
         try:
-            s3_client = boto3.client(
-                "s3",
-                aws_access_key_id=AWS_ACCESS_KEY,
-                aws_secret_access_key=AWS_SECRET_KEY,
-                region_name=REGION
-            )
+            session = boto3.Session()
+            s3_client = session.client('s3')
             ##Dashboard.csv
             BUCKET_NAME = "datacloud-heroku-appliation"
             LOCAL_FILE_PATH = "Dashboard.csv"
@@ -360,7 +350,6 @@ class Get_Dashboard_KPIS:
             S3_FILE_PATH = "dashboard_files/Refresh_Mode.csv"
             s3_client.upload_file(LOCAL_FILE_PATH, BUCKET_NAME, S3_FILE_PATH)
             print("File uploaded successfully to S3!")
-
         except FileNotFoundError:
             logger.error("File not found during S3 upload.")
             print("The file was not found.")
