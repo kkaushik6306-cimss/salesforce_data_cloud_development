@@ -215,7 +215,7 @@ class Get_Dashboard_KPIS:
         dashboard_KPIs = {}
         dashboard_KPIs["Total DS"] = total_datastreams
         dashboard_KPIs["Total DLO"] = total_datalakeobjects
-        dashboard_KPIs["Total DMO"] = 1665
+        dashboard_KPIs["Total DMO"] = 1675
         dashboard_KPIs["Total CI"]= total_calculated_insights
         dashboard_KPIs["Active CI"]= active_calculated_insights
         dashboard_KPIs["Total UP"] = total_unique_profiles
@@ -264,8 +264,8 @@ class Get_Dashboard_KPIS:
             today = pd.Timestamp.today().date()
             today_sum = df.loc[df['lastRefreshDate'] == today, 'lastProcessedRecords'].sum()
             #print(today_sum)
-            last_14_days = today - pd.Timedelta(days=13)
-            df_filtered = df[df['lastRefreshDate'] >= last_14_days]
+            last_20_days = today - pd.Timedelta(days=20)
+            df_filtered = df[df['lastRefreshDate'] >= last_20_days]
             result_df = (
                 df_filtered
                 .groupby(df_filtered['lastRefreshDate'])['lastProcessedRecords']
@@ -360,21 +360,20 @@ class Get_Dashboard_KPIS:
             logger.error("AWS Client Error during S3 upload: %s", e, exc_info=True)
             print(f"AWS Client Error: {e}")
 
-
         
 if __name__ == "__main__": 
     Get_Dashboard_KPI_obj = Get_Dashboard_KPIS("a","b")
-    client_id, username, client_secret = Get_Dashboard_KPI_obj.get_secret("studycast-integration-access-secret","us-east-1")
-    total_datastreams= Get_Dashboard_KPI_obj.get_data_stream_counts(client_id, username, client_secret)
-    total_datalakeobjects= Get_Dashboard_KPI_obj.get_data_lakeobject_counts(client_id, username, client_secret)
-    active_calculated_insights,total_calculated_insights= Get_Dashboard_KPI_obj.get_calculated_insights_counts(client_id, username, client_secret)
-    total_unique_profiles = Get_Dashboard_KPI_obj.get_unique_profile_counts(client_id, username, client_secret)
-    total_segments = Get_Dashboard_KPI_obj.get_total_segments(client_id, username, client_secret)
-    df = Get_Dashboard_KPI_obj.get_All_data_data_stream(client_id, username, client_secret)
-    dashboard_df = Get_Dashboard_KPI_obj.create_dashboard_KPI_csv(total_datastreams,total_datalakeobjects,active_calculated_insights,
-                                 total_calculated_insights,total_unique_profiles,total_segments)
+    # client_id, username, client_secret = Get_Dashboard_KPI_obj.get_secret("studycast-integration-access-secret","us-east-1")
+    # total_datastreams= Get_Dashboard_KPI_obj.get_data_stream_counts(client_id, username, client_secret)
+    # total_datalakeobjects= Get_Dashboard_KPI_obj.get_data_lakeobject_counts(client_id, username, client_secret)
+    # active_calculated_insights,total_calculated_insights= Get_Dashboard_KPI_obj.get_calculated_insights_counts(client_id, username, client_secret)
+    # total_unique_profiles = Get_Dashboard_KPI_obj.get_unique_profile_counts(client_id, username, client_secret)
+    # total_segments = Get_Dashboard_KPI_obj.get_total_segments(client_id, username, client_secret)
+    # df = Get_Dashboard_KPI_obj.get_All_data_data_stream(client_id, username, client_secret)
+    # dashboard_df = Get_Dashboard_KPI_obj.create_dashboard_KPI_csv(total_datastreams,total_datalakeobjects,active_calculated_insights,
+    #                              total_calculated_insights,total_unique_profiles,total_segments)
 
-    total_ds,total_dlo,total_dmo,total_ci,active_ci,total_up,total_seg,total_conn = Get_Dashboard_KPI_obj.get_KPIs()                                                                              
+    #total_ds,total_dlo,total_dmo,total_ci,active_ci,total_up,total_seg,total_conn = Get_Dashboard_KPI_obj.get_KPIs()                                                                              
     active_datastream,error_datastream,today_sum,daily_ingestion_df = Get_Dashboard_KPI_obj.get_informationfrom_datastream_csv()
     filtered_datastream_df = Get_Dashboard_KPI_obj.Get_category_datastream_dataframe()
     new_df = Get_Dashboard_KPI_obj.refreshmode_counts_datastream()
