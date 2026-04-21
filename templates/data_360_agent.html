@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Data 360 Agent — MIMIT</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --green-dark:    #166534;
+      --green-main:    #16a34a;
+      --green-light:   #bbf7d0;
+      --green-bg:      #f0fdf4;
+      --green-border:  #86efac;
+      --green-mid:     #dcfce7;
+      --slate-text:    #0f172a;
+      --slate-muted:   #64748b;
+      --slate-border:  #e2e8f0;
+      --white:         #ffffff;
+    }
+
+    * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
+
+    body {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      min-height: 100vh;
+      padding: 2rem 1rem 1.5rem;
+    }
+
+    /* ── Main card ── */
+    .agent-card {
+      background: var(--white);
+      border-radius: 20px;
+      box-shadow: 0 10px 48px rgba(22,163,74,.13), 0 2px 12px rgba(0,0,0,.06);
+      border: 1px solid var(--green-border);
+      width: 100%;
+      max-width: 880px;
+      margin: 0 auto;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 4rem);
+      min-height: 600px;
+    }
+
+    /* ── Card header band ── */
+    .card-header-band {
+      background: linear-gradient(135deg, var(--green-dark) 0%, #14532d 100%);
+      padding: 1.5rem 2rem 1.35rem;
+      color: #fff;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .card-header-band .logo-ring {
+      width: 48px; height: 48px;
+      background: rgba(255,255,255,.12);
+      border: 1.5px solid rgba(255,255,255,.25);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: .75rem;
+    }
+    .card-header-band .logo-ring svg { width: 24px; height: 24px; color: #fff; }
+    .card-header-band h1 { font-size: 1.25rem; font-weight: 700; margin: 0 0 .18rem; }
+    .card-header-band p  { font-size: .8rem; color: rgba(255,255,255,.68); margin: 0; }
+
+    .header-actions {
+      position: absolute; top: 1.2rem; right: 1.5rem;
+      display: flex; align-items: center; gap: .65rem;
+    }
+    .nav-pill {
+      display: inline-flex; align-items: center; gap: .35rem;
+      font-size: .74rem; color: rgba(255,255,255,.75);
+      text-decoration: none; font-weight: 600;
+      background: rgba(255,255,255,.11);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 20px;
+      padding: .26rem .72rem;
+      transition: background .2s, color .2s;
+    }
+    .nav-pill:hover { background: rgba(255,255,255,.22); color: #fff; }
+    .nav-pill svg   { width: 12px; height: 12px; }
+    .signout-link {
+      font-size: .76rem; color: rgba(255,255,255,.6);
+      text-decoration: none; font-weight: 500;
+      transition: color .2s;
+    }
+    .signout-link:hover { color: #fff; }
+    .version-badge {
+      font-size: .67rem; font-weight: 600; letter-spacing: .04em;
+      color: rgba(255,255,255,.5);
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 20px;
+      padding: .17rem .52rem;
+    }
+
+    /* ── AI live badge ── */
+    .ai-badge {
+      display: inline-flex; align-items: center; gap: .4rem;
+      font-size: .7rem; font-weight: 700; letter-spacing: .05em;
+      color: var(--green-light);
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(187,247,208,.3);
+      border-radius: 20px;
+      padding: .2rem .65rem;
+      margin-top: .6rem;
+    }
+    .ai-badge-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green-light);
+      animation: pulse-dot 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: .5; transform: scale(.75); }
+    }
+
+    /* ── Chat area ── */
+    .chat-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 1.75rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      scroll-behavior: smooth;
+    }
+    .chat-body::-webkit-scrollbar { width: 5px; }
+    .chat-body::-webkit-scrollbar-track { background: transparent; }
+    .chat-body::-webkit-scrollbar-thumb { background: #d1fae5; border-radius: 10px; }
+
+    /* ── Welcome card ── */
+    .welcome-card {
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: .25rem;
+    }
+    .welcome-card h3 {
+      font-size: .92rem; font-weight: 700;
+      color: var(--green-dark); margin: 0 0 .4rem;
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .welcome-card p {
+      font-size: .82rem; color: #166534; margin: 0 0 1rem; line-height: 1.55;
+    }
+
+    /* ── Suggestion chips ── */
+    .chip-grid {
+      display: flex; flex-wrap: wrap; gap: .5rem;
+    }
+    .chip {
+      display: inline-flex; align-items: center; gap: .35rem;
+      font-size: .75rem; font-weight: 600;
+      color: var(--green-dark);
+      background: var(--white);
+      border: 1.5px solid var(--green-border);
+      border-radius: 20px;
+      padding: .32rem .85rem;
+      cursor: pointer;
+      transition: background .18s, border-color .18s, transform .12s, box-shadow .18s;
+      white-space: nowrap;
+    }
+    .chip:hover {
+      background: var(--green-mid);
+      border-color: var(--green-main);
+      box-shadow: 0 2px 8px rgba(22,163,74,.15);
+      transform: translateY(-1px);
+    }
+    .chip:active { transform: translateY(0); }
+    .chip svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+    /* ── Message bubbles ── */
+    .msg-row {
+      display: flex;
+      align-items: flex-end;
+      gap: .6rem;
+      animation: fadeSlideUp .25s ease;
+    }
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .msg-row.user   { flex-direction: row-reverse; }
+    .msg-row.assistant { flex-direction: row; }
+
+    .msg-avatar {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: .72rem; font-weight: 700;
+    }
+    .msg-avatar.bot {
+      background: linear-gradient(135deg, var(--green-main), var(--green-dark));
+      color: #fff;
+    }
+    .msg-avatar.user {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+    }
+
+    .msg-bubble {
+      max-width: 72%;
+      padding: .75rem 1rem;
+      border-radius: 14px;
+      font-size: .83rem;
+      line-height: 1.6;
+      word-break: break-word;
+    }
+    .msg-row.user .msg-bubble {
+      background: linear-gradient(135deg, var(--green-main), var(--green-dark));
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .msg-row.assistant .msg-bubble {
+      background: #f8fafc;
+      color: var(--slate-text);
+      border: 1px solid var(--slate-border);
+      border-bottom-left-radius: 4px;
+    }
+    .msg-bubble p  { margin: 0 0 .5rem; }
+    .msg-bubble p:last-child { margin-bottom: 0; }
+    .msg-bubble strong { font-weight: 700; }
+    .msg-bubble ul, .msg-bubble ol {
+      margin: .35rem 0 .35rem 1.1rem;
+      padding: 0;
+    }
+    .msg-bubble li { margin-bottom: .2rem; }
+    .msg-bubble code {
+      font-family: 'Courier New', monospace;
+      font-size: .78rem;
+      background: rgba(0,0,0,.06);
+      padding: .1rem .3rem;
+      border-radius: 4px;
+    }
+    .msg-row.user .msg-bubble code {
+      background: rgba(255,255,255,.2);
+    }
+    .msg-bubble pre {
+      background: rgba(0,0,0,.05);
+      border-radius: 6px;
+      padding: .6rem .75rem;
+      overflow-x: auto;
+      margin: .4rem 0;
+      font-size: .75rem;
+    }
+
+    .msg-time {
+      font-size: .65rem; color: var(--slate-muted);
+      margin-top: .3rem;
+      text-align: right;
+    }
+    .msg-row.assistant .msg-time { text-align: left; }
+
+    /* ── Typing indicator ── */
+    .typing-indicator {
+      display: none;
+      align-items: flex-end;
+      gap: .6rem;
+    }
+    .typing-indicator.visible { display: flex; }
+    .typing-dots {
+      background: #f8fafc;
+      border: 1px solid var(--slate-border);
+      border-radius: 14px;
+      border-bottom-left-radius: 4px;
+      padding: .7rem .95rem;
+      display: flex; align-items: center; gap: .3rem;
+    }
+    .typing-dots span {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green-main);
+      display: inline-block;
+      animation: bounce-dot .9s ease-in-out infinite;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: .18s; }
+    .typing-dots span:nth-child(3) { animation-delay: .36s; }
+    @keyframes bounce-dot {
+      0%,60%,100% { transform: translateY(0); opacity: .7; }
+      30%          { transform: translateY(-6px); opacity: 1; }
+    }
+
+    /* ── Error bubble ── */
+    .error-bubble {
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      border-radius: 10px;
+      padding: .65rem 1rem;
+      font-size: .8rem;
+      color: #9f1239;
+      display: flex; align-items: flex-start; gap: .5rem;
+    }
+    .error-bubble svg { width: 15px; height: 15px; flex-shrink: 0; margin-top: .1rem; }
+
+    /* ── Input area ── */
+    .chat-footer {
+      padding: 1rem 1.75rem 1.4rem;
+      border-top: 1px solid var(--slate-border);
+      background: var(--white);
+      flex-shrink: 0;
+    }
+    .input-row {
+      display: flex;
+      align-items: flex-end;
+      gap: .75rem;
+    }
+    .input-wrap {
+      flex: 1;
+      position: relative;
+    }
+    #chat-input {
+      width: 100%;
+      border: 1.5px solid var(--slate-border);
+      border-radius: 14px;
+      background: #fafafa;
+      padding: .7rem 1rem;
+      font-size: .85rem;
+      color: var(--slate-text);
+      resize: none;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+      line-height: 1.5;
+      min-height: 44px;
+      max-height: 140px;
+      overflow-y: auto;
+      font-family: 'Inter', sans-serif;
+    }
+    #chat-input::placeholder { color: #9ca3af; }
+    #chat-input:focus {
+      border-color: var(--green-main);
+      box-shadow: 0 0 0 3px rgba(22,163,74,.12);
+      background: var(--white);
+    }
+    .btn-send {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--green-main), var(--green-dark));
+      border: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: opacity .2s, transform .12s, box-shadow .2s;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(22,163,74,.3);
+    }
+    .btn-send:hover  { opacity: .9; box-shadow: 0 4px 14px rgba(22,163,74,.4); transform: translateY(-1px); }
+    .btn-send:active { transform: scale(.94); }
+    .btn-send:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-send svg { width: 18px; height: 18px; color: #fff; }
+
+    .input-hint {
+      font-size: .68rem;
+      color: var(--slate-muted);
+      margin-top: .45rem;
+      padding-left: .15rem;
+    }
+    .input-hint kbd {
+      font-size: .65rem;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      padding: .05rem .3rem;
+      font-family: inherit;
+      color: #475569;
+    }
+
+    /* ── Clear button ── */
+    .btn-clear {
+      display: inline-flex; align-items: center; gap: .3rem;
+      font-size: .72rem; font-weight: 600;
+      color: var(--slate-muted);
+      background: none; border: none; cursor: pointer;
+      padding: .2rem .4rem;
+      border-radius: 6px;
+      transition: color .18s, background .18s;
+    }
+    .btn-clear:hover { color: #dc2626; background: #fff1f2; }
+    .btn-clear svg { width: 12px; height: 12px; }
+
+    /* ── Section divider ── */
+    .context-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .6rem 1.75rem .5rem;
+      border-bottom: 1px solid #f1f5f9;
+      background: #fafcff;
+      flex-shrink: 0;
+    }
+    .context-tags { display: flex; gap: .4rem; flex-wrap: wrap; }
+    .ctx-tag {
+      font-size: .68rem; font-weight: 600;
+      border-radius: 20px; padding: .18rem .6rem;
+      display: inline-flex; align-items: center; gap: .3rem;
+    }
+    .ctx-tag.green { background: #f0fdf4; color: var(--green-dark); border: 1px solid #bbf7d0; }
+    .ctx-tag.blue  { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .ctx-tag.amber { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+    .ctx-tag svg   { width: 10px; height: 10px; }
+
+    /* ── Scrollbar for chat body ── */
+    .chat-body { scrollbar-width: thin; scrollbar-color: #d1fae5 transparent; }
+
+    @media (max-width: 600px) {
+      body { padding: 0; }
+      .agent-card {
+        border-radius: 0;
+        height: 100vh;
+        max-width: 100%;
+        min-height: unset;
+      }
+      .chat-body { padding: 1rem 1rem .75rem; }
+      .chat-footer { padding: .75rem 1rem 1rem; }
+      .context-bar { padding: .5rem 1rem; }
+      .card-header-band { padding: 1.25rem 1rem 1.1rem; }
+      .header-actions { top: .9rem; right: 1rem; }
+      .msg-bubble { max-width: 86%; }
+    }
+  </style>
+</head>
+<body>
+<div class="agent-card">
+
+  <!-- ── Header ── -->
+  <div class="card-header-band">
+    <div class="header-actions">
+      <span class="version-badge">v{{ app_version }}</span>
+      <a href="/aws-config" class="nav-pill">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+        </svg>
+        Configure
+      </a>
+      <a href="/dashboard" target="_blank" class="nav-pill">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6z
+               M14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z
+               M4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z
+               M14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+        </svg>
+        Dashboard
+      </a>
+      <a href="/logout" class="signout-link">Sign out &#8594;</a>
+    </div>
+
+    <div class="logo-ring">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1 1 .03 2.703-1.352 2.703H8.204a1.55 1.55 0 01-1.087-.449L5 16.95"/>
+      </svg>
+    </div>
+    <h1>Data 360 Agent</h1>
+    <p>Intelligent assistant for your MIMIT Salesforce Data Cloud environment</p>
+    <div class="ai-badge">
+      <div class="ai-badge-dot"></div>
+      AI POWERED · MIMIT PRODUCTION ORG
+    </div>
+  </div>
+
+  <!-- ── Context bar ── -->
+  <div class="context-bar">
+    <div class="context-tags">
+      <span class="ctx-tag green">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z"/>
+        </svg>
+        mimit.my.salesforce.com
+      </span>
+      <span class="ctx-tag blue">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 2.625c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"/>
+        </svg>
+        Data Cloud
+      </span>
+      <span class="ctx-tag amber">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+        </svg>
+        Claude AI
+      </span>
+    </div>
+    <button class="btn-clear" id="btn-clear" onclick="clearChat()">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/>
+      </svg>
+      Clear chat
+    </button>
+  </div>
+
+  <!-- ── Chat messages ── -->
+  <div class="chat-body" id="chat-body">
+
+    <!-- Welcome message -->
+    <div class="welcome-card" id="welcome-card">
+      <h3>
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--green-main)">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+        </svg>
+        Hello! I'm your Data 360 Agent.
+      </h3>
+      <p>Ask me anything about your MIMIT Salesforce Data Cloud environment — Data Streams, DLOs, DMOs, Calculated Insights, Segments, Profiles, and more. Try one of the quick questions below or type your own.</p>
+      <div class="chip-grid" id="chip-grid">
+        <button class="chip" onclick="sendChip(this)">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+          How many Data Streams are there?
+        </button>
+        <button class="chip" onclick="sendChip(this)">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375"/></svg>
+          How many DLOs and DMOs are configured?
+        </button>
+        <button class="chip" onclick="sendChip(this)">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          What are Calculated Insights?
+        </button>
+        <button class="chip" onclick="sendChip(this)">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+          Explain Unified Profiles
+        </button>
+        <button class="chip" onclick="sendChip(this)">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6"/></svg>
+          How does Identity Resolution work?
+        </button>
+        <button class="chip" onclick="sendChip(this)">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z"/></svg>
+          What is the difference between DLO and DMO?
+        </button>
+        <button class="chip" onclick="sendChip(this)">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.97zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.97z"/></svg>
+          How do Segments work in Data 360?
+        </button>
+      </div>
+    </div>
+
+    <!-- Typing indicator -->
+    <div class="typing-indicator" id="typing-indicator">
+      <div class="msg-avatar bot">AI</div>
+      <div class="typing-dots">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Footer / Input ── -->
+  <div class="chat-footer">
+    <div class="input-row">
+      <div class="input-wrap">
+        <textarea
+          id="chat-input"
+          rows="1"
+          placeholder="Ask anything about Data Streams, DLOs, DMOs, Calculated Insights, Segments…"
+          onkeydown="handleKey(event)"
+          oninput="autoResize(this)"
+        ></textarea>
+      </div>
+      <button class="btn-send" id="btn-send" onclick="sendMessage()" title="Send (Enter)">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
+        </svg>
+      </button>
+    </div>
+    <div class="input-hint">
+      Press <kbd>Enter</kbd> to send &nbsp;·&nbsp; <kbd>Shift + Enter</kbd> for new line
+    </div>
+  </div>
+
+</div>
+
+<script>
+  /* ── State ── */
+  const MAX_HISTORY = 20;
+  let conversationHistory = [];
+  let isLoading = false;
+
+  const chatBody   = document.getElementById('chat-body');
+  const inputEl    = document.getElementById('chat-input');
+  const sendBtn    = document.getElementById('btn-send');
+  const typingEl   = document.getElementById('typing-indicator');
+  const welcomeEl  = document.getElementById('welcome-card');
+
+  /* ── Auto-resize textarea ── */
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 140) + 'px';
+  }
+
+  /* ── Key handler ── */
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  /* ── Chip click ── */
+  function sendChip(el) {
+    const text = el.innerText.trim();
+    inputEl.value = text;
+    autoResize(inputEl);
+    sendMessage();
+  }
+
+  /* ── Scroll to bottom ── */
+  function scrollBottom() {
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+
+  /* ── Format timestamp ── */
+  function formatTime(d) {
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  /* ── Render assistant markdown (basic) ── */
+  function renderMarkdown(text) {
+    return text
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/^#{1,3}\s+(.+)$/gm, '<strong>$1</strong>')
+      .replace(/^- (.+)$/gm, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+      .replace(/\n\n+/g, '</p><p>')
+      .replace(/\n/g, '<br>')
+      .replace(/^(.+)$/, '<p>$1</p>');
+  }
+
+  /* ── Append message bubble ── */
+  function appendMessage(role, content) {
+    const row = document.createElement('div');
+    row.className = 'msg-row ' + role;
+
+    const avatar = document.createElement('div');
+    avatar.className = 'msg-avatar ' + (role === 'user' ? 'user' : 'bot');
+    avatar.textContent = role === 'user' ? 'U' : 'AI';
+
+    const col = document.createElement('div');
+    col.style.display = 'flex';
+    col.style.flexDirection = 'column';
+    col.style.maxWidth = '72%';
+    if (role === 'user') col.style.alignItems = 'flex-end';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    if (role === 'assistant') {
+      bubble.innerHTML = renderMarkdown(content);
+    } else {
+      bubble.textContent = content;
+    }
+
+    const time = document.createElement('div');
+    time.className = 'msg-time';
+    time.textContent = formatTime(new Date());
+
+    col.appendChild(bubble);
+    col.appendChild(time);
+
+    if (role === 'user') {
+      row.appendChild(col);
+      row.appendChild(avatar);
+    } else {
+      row.appendChild(avatar);
+      row.appendChild(col);
+    }
+
+    chatBody.insertBefore(row, typingEl);
+    scrollBottom();
+    return bubble;
+  }
+
+  /* ── Show / hide typing indicator ── */
+  function setTyping(visible) {
+    typingEl.classList.toggle('visible', visible);
+    scrollBottom();
+  }
+
+  /* ── Set loading state ── */
+  function setLoading(loading) {
+    isLoading = loading;
+    sendBtn.disabled = loading;
+    inputEl.disabled = loading;
+    setTyping(loading);
+  }
+
+  /* ── Main send ── */
+  async function sendMessage() {
+    if (isLoading) return;
+    const text = inputEl.value.trim();
+    if (!text) return;
+
+    /* Dismiss welcome card after first message */
+    if (welcomeEl) {
+      welcomeEl.style.transition = 'opacity .3s';
+      welcomeEl.style.opacity = '0';
+      setTimeout(() => welcomeEl.remove(), 300);
+    }
+
+    inputEl.value = '';
+    inputEl.style.height = 'auto';
+    appendMessage('user', text);
+
+    conversationHistory.push({ role: 'user', content: text });
+    if (conversationHistory.length > MAX_HISTORY) {
+      conversationHistory = conversationHistory.slice(-MAX_HISTORY);
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch('/data-360-agent/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: text,
+          history: conversationHistory.slice(0, -1),
+        }),
+      });
+
+      const data = await res.json();
+      setLoading(false);
+
+      if (!res.ok || data.error) {
+        appendErrorMessage(data.error || 'An unexpected error occurred.');
+        conversationHistory.pop();
+        return;
+      }
+
+      const reply = data.response || '';
+      appendMessage('assistant', reply);
+      conversationHistory.push({ role: 'assistant', content: reply });
+      if (conversationHistory.length > MAX_HISTORY) {
+        conversationHistory = conversationHistory.slice(-MAX_HISTORY);
+      }
+
+    } catch (err) {
+      setLoading(false);
+      appendErrorMessage('Network error: ' + err.message);
+      conversationHistory.pop();
+    }
+  }
+
+  /* ── Error message ── */
+  function appendErrorMessage(msg) {
+    const row = document.createElement('div');
+    row.className = 'msg-row assistant';
+    row.innerHTML = `
+      <div class="msg-avatar bot">AI</div>
+      <div>
+        <div class="error-bubble">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+          </svg>
+          ${escHtml(msg)}
+        </div>
+      </div>`;
+    chatBody.insertBefore(row, typingEl);
+    scrollBottom();
+  }
+
+  /* ── Clear conversation ── */
+  function clearChat() {
+    conversationHistory = [];
+    const rows = chatBody.querySelectorAll('.msg-row');
+    rows.forEach(r => r.remove());
+    if (!document.getElementById('welcome-card')) {
+      const wc = buildWelcomeCard();
+      chatBody.insertBefore(wc, typingEl);
+    }
+  }
+
+  /* ── Rebuild welcome card ── */
+  function buildWelcomeCard() {
+    const div = document.createElement('div');
+    div.id = 'welcome-card';
+    div.className = 'welcome-card';
+    div.innerHTML = `
+      <h3>
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--green-main)">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+        </svg>
+        Hello! I'm your Data 360 Agent.
+      </h3>
+      <p>Ask me anything about your MIMIT Salesforce Data Cloud environment — Data Streams, DLOs, DMOs, Calculated Insights, Segments, Profiles, and more.</p>`;
+    return div;
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  /* ── Focus input on load ── */
+  inputEl.focus();
+</script>
+</body>
+</html>

@@ -363,17 +363,17 @@ class Get_Dashboard_KPIS:
         
 if __name__ == "__main__": 
     Get_Dashboard_KPI_obj = Get_Dashboard_KPIS("a","b")
-    # client_id, username, client_secret = Get_Dashboard_KPI_obj.get_secret("studycast-integration-access-secret","us-east-1")
-    # total_datastreams= Get_Dashboard_KPI_obj.get_data_stream_counts(client_id, username, client_secret)
-    # total_datalakeobjects= Get_Dashboard_KPI_obj.get_data_lakeobject_counts(client_id, username, client_secret)
-    # active_calculated_insights,total_calculated_insights= Get_Dashboard_KPI_obj.get_calculated_insights_counts(client_id, username, client_secret)
-    # total_unique_profiles = Get_Dashboard_KPI_obj.get_unique_profile_counts(client_id, username, client_secret)
-    # total_segments = Get_Dashboard_KPI_obj.get_total_segments(client_id, username, client_secret)
-    # df = Get_Dashboard_KPI_obj.get_All_data_data_stream(client_id, username, client_secret)
-    # dashboard_df = Get_Dashboard_KPI_obj.create_dashboard_KPI_csv(total_datastreams,total_datalakeobjects,active_calculated_insights,
-    #                              total_calculated_insights,total_unique_profiles,total_segments)
+    client_id, username, client_secret = Get_Dashboard_KPI_obj.get_secret("studycast-integration-access-secret","us-east-1")
+    total_datastreams= Get_Dashboard_KPI_obj.get_data_stream_counts(client_id, username, client_secret)
+    total_datalakeobjects= Get_Dashboard_KPI_obj.get_data_lakeobject_counts(client_id, username, client_secret)
+    active_calculated_insights,total_calculated_insights= Get_Dashboard_KPI_obj.get_calculated_insights_counts(client_id, username, client_secret)
+    total_unique_profiles = Get_Dashboard_KPI_obj.get_unique_profile_counts(client_id, username, client_secret)
+    total_segments = Get_Dashboard_KPI_obj.get_total_segments(client_id, username, client_secret)
+    df = Get_Dashboard_KPI_obj.get_All_data_data_stream(client_id, username, client_secret)
+    dashboard_df = Get_Dashboard_KPI_obj.create_dashboard_KPI_csv(total_datastreams,total_datalakeobjects,active_calculated_insights,
+                                 total_calculated_insights,total_unique_profiles,total_segments)
 
-    #total_ds,total_dlo,total_dmo,total_ci,active_ci,total_up,total_seg,total_conn = Get_Dashboard_KPI_obj.get_KPIs()                                                                              
+    total_ds,total_dlo,total_dmo,total_ci,active_ci,total_up,total_seg,total_conn = Get_Dashboard_KPI_obj.get_KPIs()                                                                              
     active_datastream,error_datastream,today_sum,daily_ingestion_df = Get_Dashboard_KPI_obj.get_informationfrom_datastream_csv()
     filtered_datastream_df = Get_Dashboard_KPI_obj.Get_category_datastream_dataframe()
     new_df = Get_Dashboard_KPI_obj.refreshmode_counts_datastream()

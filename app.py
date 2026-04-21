@@ -23,7 +23,7 @@ app.secret_key = "sfdc-datastream-secret-key"
 # -----------------------------------------------------------------------------
 # Version — update here to reflect the new version everywhere
 # -----------------------------------------------------------------------------
-APP_VERSION = "1.1"
+APP_VERSION = "1.2"
 
 @app.context_processor
 def inject_version():
@@ -588,6 +588,357 @@ def extract_data():
         as_attachment=True,
         download_name=filename,
     )
+
+
+# -----------------------------------------------------------------------------
+# Routes — Data 360 Agent
+# -----------------------------------------------------------------------------
+
+CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY", "YOUR_CLAUDE_API_KEY_HERE")
+
+DATA360_SYSTEM_PROMPT = """You are a Data 360 Expert AI Agent for the MIMIT Salesforce Production Organization (mimit.my.salesforce.com).
+
+You help users understand, manage, and troubleshoot their Salesforce Data Cloud (Data 360) environment, and you can also query standard Salesforce CRM data using SOQL.
+
+Key Data 360 Components you are knowledgeable about:
+- Data Streams: Connectors that ingest data from source systems into Data Cloud. They define how data flows in.
+- Data Lake Objects (DLO): Raw storage objects in the Data Lake layer — the landing zone for ingested data.
+- Data Model Objects (DMO): Harmonized objects in the Data Model layer that map to standard or custom entities.
+- Calculated Insights (CI): SQL-based computed metrics and analytics built on top of unified profiles and DMOs.
+- Unified Profiles: Customer 360 profile objects that combine identity-resolved records from multiple sources.
+- Segments: Audience filters built on unified profiles for targeted marketing and activation.
+- Activations: Configuration to push segments to external destinations (e.g., Marketing Cloud, ad platforms).
+- Identity Resolution: Rules to match and merge customer records across data sources.
+- Data Transforms: Batch transformations to process or enrich data within the platform.
+- Data Spaces: Logical partitions within the Data Cloud org for data governance and isolation.
+
+You also have direct access to the MIMIT Salesforce org via live tool calls:
+- Use query_salesforce to run any SOQL query against the org's standard and custom CRM objects.
+- Use list_salesforce_objects to discover available Salesforce objects.
+- Use describe_salesforce_object to inspect the fields and schema of any object before querying.
+
+When answering, be concise, precise, and professional. When you have tool access, ALWAYS call the
+appropriate tool to fetch real-time data before answering questions about counts, names, or status.
+Always mention relevant Salesforce documentation paths or Setup menu navigation when applicable."""
+
+AGENT_TOOLS = [
+    {
+        "name": "get_org_summary",
+        "description": (
+            "Get a high-level KPI summary of the MIMIT Salesforce Data Cloud org: "
+            "total and active Data Streams, DLOs, DMOs, Calculated Insights, "
+            "Unified Profiles, Segments, Connectors, and today's ingestion volume."
+        ),
+        "input_schema": {"type": "object", "properties": {}, "required": []},
+    },
+    {
+        "name": "get_data_streams",
+        "description": (
+            "Fetch the live list of Data Streams from the MIMIT org with their "
+            "names, status, refresh mode, and metadata."
+        ),
+        "input_schema": {"type": "object", "properties": {}, "required": []},
+    },
+    {
+        "name": "get_data_lake_objects",
+        "description": "Fetch Data Lake Objects (DLOs) from the MIMIT org. Optionally filter by category.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string",
+                    "enum": ["Profile", "Engagement", "Related"],
+                    "description": "Entity category to filter by. Defaults to Profile.",
+                }
+            },
+            "required": [],
+        },
+    },
+    {
+        "name": "get_data_model_objects",
+        "description": "Fetch Data Model Objects (DMOs) from the MIMIT org. Optionally filter by category.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string",
+                    "enum": ["Profile", "Engagement", "Related"],
+                    "description": "Entity category to filter by. Defaults to Profile.",
+                }
+            },
+            "required": [],
+        },
+    },
+    {
+        "name": "get_calculated_insights",
+        "description": "Fetch Calculated Insights (CIs) from the MIMIT org with names and configuration.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string",
+                    "enum": ["Profile", "Engagement", "Related"],
+                    "description": "Entity category to filter by. Defaults to Profile.",
+                }
+            },
+            "required": [],
+        },
+    },
+    {
+        "name": "query_salesforce",
+        "description": (
+            "Execute a SOQL query against the MIMIT Salesforce org to retrieve CRM data. "
+            "Use this to query standard objects (Account, Contact, Case, Opportunity, etc.) "
+            "or custom objects. Mirrors the MIMIT MCP mimit-sf-query capability."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "soql": {
+                    "type": "string",
+                    "description": "The SOQL query to execute, e.g. 'SELECT Id, Name FROM Account LIMIT 10'",
+                }
+            },
+            "required": ["soql"],
+        },
+    },
+    {
+        "name": "list_salesforce_objects",
+        "description": (
+            "List all available Salesforce objects (standard and custom) in the MIMIT org. "
+            "Use this to discover what CRM objects are available to query. "
+            "Mirrors the MIMIT MCP mimit-list-objects capability."
+        ),
+        "input_schema": {"type": "object", "properties": {}, "required": []},
+    },
+    {
+        "name": "describe_salesforce_object",
+        "description": (
+            "Get the full schema and field list for a specific Salesforce object in the MIMIT org. "
+            "Use this before querying to understand available fields and their types. "
+            "Mirrors the MIMIT MCP mimit-describe-object capability."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "object_name": {
+                    "type": "string",
+                    "description": "API name of the Salesforce object, e.g. 'Account', 'Contact', 'MyCustom__c'",
+                }
+            },
+            "required": ["object_name"],
+        },
+    },
+]
+
+
+def execute_agent_tool(tool_name: str, tool_input: dict, client_id: str, client_secret: str) -> str:
+    """Execute a live Salesforce API call on behalf of the Data 360 Agent."""
+    try:
+        if tool_name == "get_org_summary":
+            kpi_obj = Get_Dashboard_KPIS("a", "b")
+            total_ds, total_dlo, total_dmo, total_ci, active_ci, total_up, total_seg, total_conn = kpi_obj.get_KPIs()
+            active_ds, error_ds, today_sum, _ = kpi_obj.get_informationfrom_datastream_csv()
+            def _v(x): return x.iloc[0] if hasattr(x, "iloc") else x
+            return json.dumps({
+                "total_data_streams":          int(_v(total_ds)),
+                "active_data_streams":         int(_v(active_ds)),
+                "error_data_streams":          int(_v(error_ds)),
+                "total_data_lake_objects":     int(_v(total_dlo)),
+                "total_data_model_objects":    int(_v(total_dmo)),
+                "total_calculated_insights":   int(_v(total_ci)),
+                "active_calculated_insights":  int(_v(active_ci)),
+                "unified_profiles":            int(_v(total_up)),
+                "total_segments":              int(_v(total_seg)),
+                "total_connectors":            int(_v(total_conn)),
+                "todays_ingestion_volume":     int(_v(today_sum)),
+            })
+
+        elif tool_name == "get_data_streams":
+            core_resp    = get_access_token(client_id, client_secret)
+            access_token = core_resp.json()["access_token"]
+            instance_url = core_resp.json()["instance_url"]
+            headers = {"Authorization": f"Bearer {access_token}", "Accept": "application/json"}
+            resp = requests.get(
+                f"{instance_url}/services/data/v64.0/ssot/data-streams/",
+                headers=headers, timeout=30,
+            )
+            resp.raise_for_status()
+            return json.dumps(resp.json())
+
+        elif tool_name in ("get_data_lake_objects", "get_data_model_objects", "get_calculated_insights"):
+            entity_map = {
+                "get_data_lake_objects":   "DataLakeObject",
+                "get_data_model_objects":  "DataModelObject",
+                "get_calculated_insights": "CalculatedInsight",
+            }
+            category    = tool_input.get("category", "Profile")
+            entity_type = entity_map[tool_name]
+            api_url = (
+                f"{CDP_BASE_URL}/api/v1/metadata"
+                f"?entityType={entity_type}&entityCategory={category}"
+            )
+            result = get_data_streams(client_id, client_secret, api_url)
+            return json.dumps(result["payload"])
+
+        elif tool_name == "query_salesforce":
+            soql = tool_input.get("soql", "").strip()
+            if not soql:
+                return json.dumps({"error": "soql parameter is required"})
+            core_resp    = get_access_token(client_id, client_secret)
+            access_token = core_resp.json()["access_token"]
+            instance_url = core_resp.json()["instance_url"]
+            headers = {"Authorization": f"Bearer {access_token}", "Accept": "application/json"}
+            resp = requests.get(
+                f"{instance_url}/services/data/v64.0/query",
+                params={"q": soql},
+                headers=headers,
+                timeout=30,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            return json.dumps({
+                "totalSize":  data.get("totalSize", 0),
+                "done":       data.get("done", True),
+                "records":    data.get("records", []),
+            })
+
+        elif tool_name == "list_salesforce_objects":
+            core_resp    = get_access_token(client_id, client_secret)
+            access_token = core_resp.json()["access_token"]
+            instance_url = core_resp.json()["instance_url"]
+            headers = {"Authorization": f"Bearer {access_token}", "Accept": "application/json"}
+            resp = requests.get(
+                f"{instance_url}/services/data/v64.0/sobjects/",
+                headers=headers,
+                timeout=30,
+            )
+            resp.raise_for_status()
+            raw = resp.json()
+            objects = [
+                {"name": o["name"], "label": o["label"], "queryable": o.get("queryable", False)}
+                for o in raw.get("sobjects", [])
+            ]
+            return json.dumps({"sobjects": objects, "count": len(objects)})
+
+        elif tool_name == "describe_salesforce_object":
+            object_name = tool_input.get("object_name", "").strip()
+            if not object_name:
+                return json.dumps({"error": "object_name parameter is required"})
+            core_resp    = get_access_token(client_id, client_secret)
+            access_token = core_resp.json()["access_token"]
+            instance_url = core_resp.json()["instance_url"]
+            headers = {"Authorization": f"Bearer {access_token}", "Accept": "application/json"}
+            resp = requests.get(
+                f"{instance_url}/services/data/v64.0/sobjects/{object_name}/describe/",
+                headers=headers,
+                timeout=30,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            fields = [
+                {"name": f["name"], "label": f["label"], "type": f["type"], "nillable": f.get("nillable", True)}
+                for f in data.get("fields", [])
+            ]
+            return json.dumps({
+                "name":       data.get("name"),
+                "label":      data.get("label"),
+                "queryable":  data.get("queryable"),
+                "fields":     fields,
+                "fieldCount": len(fields),
+            })
+
+        else:
+            return json.dumps({"error": f"Unknown tool: {tool_name}"})
+
+    except Exception as exc:
+        app.logger.error("Agent tool error (%s): %s", tool_name, exc, exc_info=True)
+        return json.dumps({"error": str(exc)})
+
+
+@app.route("/data-360-agent", methods=["GET"])
+@login_required
+def data_360_agent():
+    return render_template("data_360_agent.html")
+
+
+@app.route("/data-360-agent/chat", methods=["POST"])
+@login_required
+def data_360_agent_chat():
+    body    = request.get_json(force=True, silent=True) or {}
+    message = (body.get("message") or "").strip()
+    history = body.get("history") or []
+
+    if not message:
+        return jsonify({"error": "Message is required."}), 400
+
+    if CLAUDE_API_KEY == "YOUR_CLAUDE_API_KEY_HERE":
+        return jsonify({"error": "Claude API key not configured. Please set the CLAUDE_API_KEY environment variable."}), 503
+
+    client_id     = session.get("client_id")
+    client_secret = session.get("client_secret")
+    has_sf_creds  = bool(client_id and client_secret)
+
+    try:
+        import anthropic
+        client = anthropic.Anthropic(api_key=CLAUDE_API_KEY)
+
+        messages = [
+            {"role": m["role"], "content": m["content"]}
+            for m in history if m.get("role") in ("user", "assistant")
+        ]
+        messages.append({"role": "user", "content": message})
+
+        system = DATA360_SYSTEM_PROMPT
+        if has_sf_creds:
+            system += (
+                "\n\nIMPORTANT: You have live tool access to the MIMIT production org. "
+                "When the user asks about counts, lists, names, or status of any Data Cloud "
+                "component, ALWAYS call the appropriate tool first to fetch real-time data."
+            )
+        else:
+            system += (
+                "\n\nNOTE: No Salesforce credentials are active in this session. "
+                "You cannot fetch live org data. Advise the user to load their AWS credentials "
+                "via the Configure page first if they need live information."
+            )
+
+        call_kwargs = dict(
+            model="claude-sonnet-4-6",
+            max_tokens=2048,
+            system=system,
+            messages=messages,
+        )
+        if has_sf_creds:
+            call_kwargs["tools"] = AGENT_TOOLS
+
+        for _ in range(5):
+            response = client.messages.create(**call_kwargs)
+
+            if response.stop_reason != "tool_use":
+                text = "\n".join(b.text for b in response.content if hasattr(b, "text"))
+                return jsonify({"response": text})
+
+            tool_results = []
+            for block in response.content:
+                if block.type == "tool_use":
+                    result = execute_agent_tool(block.name, block.input, client_id, client_secret)
+                    tool_results.append({
+                        "type":        "tool_result",
+                        "tool_use_id": block.id,
+                        "content":     result,
+                    })
+
+            call_kwargs["messages"] = call_kwargs["messages"] + [
+                {"role": "assistant", "content": response.content},
+                {"role": "user",      "content": tool_results},
+            ]
+
+        return jsonify({"error": "Agent reached maximum tool iterations. Please try again."}), 500
+
+    except Exception as exc:
+        app.logger.error("Data 360 Agent chat error: %s", exc, exc_info=True)
+        return jsonify({"error": str(exc)}), 500
 
 
 @app.route("/health")
