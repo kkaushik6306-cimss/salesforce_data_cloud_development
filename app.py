@@ -237,7 +237,7 @@ def dashboard():
     def _val(v):
         return v.iloc[0] if hasattr(v, 'iloc') else v
     today_sum = f"{today_sum/1000:.1f}K"
-    ingestion_dates = [str(d) for d in daily_ingestion_df['Date'].tolist()]
+    ingestion_dates = [pd.to_datetime(d).strftime('%Y-%m-%d') for d in daily_ingestion_df['Date'].tolist()]
     ingestion_volumes = [float(v) for v in daily_ingestion_df['Total Volume'].tolist()]
     return render_template(
         "dashboard.html",
