@@ -215,7 +215,7 @@ class Get_Dashboard_KPIS:
         dashboard_KPIs = {}
         dashboard_KPIs["Total DS"] = total_datastreams
         dashboard_KPIs["Total DLO"] = total_datalakeobjects
-        dashboard_KPIs["Total DMO"] = 1675
+        dashboard_KPIs["Total DMO"] = 1733
         dashboard_KPIs["Total CI"]= total_calculated_insights
         dashboard_KPIs["Active CI"]= active_calculated_insights
         dashboard_KPIs["Total UP"] = total_unique_profiles
@@ -263,17 +263,23 @@ class Get_Dashboard_KPIS:
             df['lastProcessedRecords'] = pd.to_numeric(df['lastProcessedRecords'], errors='coerce').fillna(0)
             today = pd.Timestamp.today().date()
             today_sum = df.loc[df['lastRefreshDate'] == today, 'lastProcessedRecords'].sum()
-            #print(today_sum)
-            last_20_days = today - pd.Timedelta(days=20)
-            df_filtered = df[df['lastRefreshDate'] >= last_20_days]
-            result_df = (
-                df_filtered
-                .groupby(df_filtered['lastRefreshDate'])['lastProcessedRecords']
-                .sum()
-                .reset_index()
-            )
-            result_df.columns = ['Date', 'Total Volume']
-            daily_ingestion_df = result_df.sort_values(by='Date')
+            file_key = 'dashboard_files/daily_ingestion_df.csv'
+            response = s3.get_object(Bucket=bucket_name, Key=file_key)
+            csv_content = response['Body'].read().decode('utf-8')
+            df = pd.read_csv(StringIO(csv_content))
+
+            daily_ingestion_df = pd.read_csv('daily_ingestion_df.csv')
+            daily_ingestion_df.loc[len(daily_ingestion_df)] = [today,today_sum]
+            #last_20_days = today - pd.Timedelta(days=20)
+            #df_filtered = df[df['lastRefreshDate'] >= last_20_days]
+            # result_df = (
+            #     df_filtered
+            #     .groupby(df_filtered['lastRefreshDate'])['lastProcessedRecords']
+            #     .sum()
+            #     .reset_index()
+            # )
+            # result_df.columns = ['Date', 'Total Volume']
+            # daily_ingestion_df = result_df.sort_values(by='Date')
             daily_ingestion_df.to_csv('daily_ingestion_df.csv',index=False)
             return active_datastream,error_datastream,today_sum,daily_ingestion_df
         except Exception as e:
@@ -348,6 +354,10 @@ class Get_Dashboard_KPIS:
             ##Refresh_Mode.csv
             LOCAL_FILE_PATH = "Refresh_Mode.csv"
             S3_FILE_PATH = "dashboard_files/Refresh_Mode.csv"
+            s3_client.upload_file(LOCAL_FILE_PATH, BUCKET_NAME, S3_FILE_PATH)
+            ##Daily_Ingestion.csv
+            LOCAL_FILE_PATH = "daily_ingestion_df.csv"
+            S3_FILE_PATH = "dashboard_files/daily_ingestion_df.csv"
             s3_client.upload_file(LOCAL_FILE_PATH, BUCKET_NAME, S3_FILE_PATH)
             print("File uploaded successfully to S3!")
         except FileNotFoundError:
