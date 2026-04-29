@@ -215,7 +215,7 @@ class Get_Dashboard_KPIS:
         dashboard_KPIs = {}
         dashboard_KPIs["Total DS"] = total_datastreams
         dashboard_KPIs["Total DLO"] = total_datalakeobjects
-        dashboard_KPIs["Total DMO"] = 1733
+        dashboard_KPIs["Total DMO"] = 1779
         dashboard_KPIs["Total CI"]= total_calculated_insights
         dashboard_KPIs["Active CI"]= active_calculated_insights
         dashboard_KPIs["Total UP"] = total_unique_profiles
@@ -267,9 +267,10 @@ class Get_Dashboard_KPIS:
             response = s3.get_object(Bucket=bucket_name, Key=file_key)
             csv_content = response['Body'].read().decode('utf-8')
             df = pd.read_csv(StringIO(csv_content))
-
-            daily_ingestion_df = pd.read_csv('daily_ingestion_df.csv')
-            daily_ingestion_df.loc[len(daily_ingestion_df)] = [today,today_sum]
+            df.loc[len(df)] = [today,today_sum]
+            daily_ingestion_df = df.copy()
+            #daily_ingestion_df = pd.read_csv('daily_ingestion_df.csv')
+            #daily_ingestion_df.loc[len(daily_ingestion_df)] = [today,today_sum]
             #last_20_days = today - pd.Timedelta(days=20)
             #df_filtered = df[df['lastRefreshDate'] >= last_20_days]
             # result_df = (
@@ -334,7 +335,27 @@ class Get_Dashboard_KPIS:
             logger.error("Error computing refresh mode counts: %s", e, exc_info=True)
             print(f"Error: {e}")
 
-    def upload_csv_s3bucket(self):
+    def upload_data_streamcsv_s3bucket(self):
+        try:
+            session = boto3.Session()
+            s3_client = session.client('s3')
+            ##Dashboard.csv
+            BUCKET_NAME = "datacloud-heroku-appliation"
+            LOCAL_FILE_PATH = "DataStream.csv"
+            S3_FILE_PATH = "dashboard_files/DataStream.csv"
+            s3_client.upload_file(LOCAL_FILE_PATH, BUCKET_NAME, S3_FILE_PATH)
+            print("Data Stream uploaded successfully to S3!")
+        except FileNotFoundError:
+            logger.error("File not found during S3 upload.")
+            print("The file was not found.")
+        except NoCredentialsError:
+            logger.error("AWS credentials not available for S3 upload.")
+            print("AWS credentials not available.")
+        except ClientError as e:
+            logger.error("AWS Client Error during S3 upload: %s", e, exc_info=True)
+            print(f"AWS Client Error: {e}")
+
+    def upload_allcsv_s3bucket(self):
         try:
             session = boto3.Session()
             s3_client = session.client('s3')
@@ -342,10 +363,6 @@ class Get_Dashboard_KPIS:
             BUCKET_NAME = "datacloud-heroku-appliation"
             LOCAL_FILE_PATH = "Dashboard.csv"
             S3_FILE_PATH = "dashboard_files/Dashboard.csv"
-            s3_client.upload_file(LOCAL_FILE_PATH, BUCKET_NAME, S3_FILE_PATH)
-            ##DataStream.csv
-            LOCAL_FILE_PATH = "DataStream.csv"
-            S3_FILE_PATH = "dashboard_files/DataStream.csv"
             s3_client.upload_file(LOCAL_FILE_PATH, BUCKET_NAME, S3_FILE_PATH)
             ##DSCategory.csv
             LOCAL_FILE_PATH = "DSCategory.csv"
@@ -359,7 +376,7 @@ class Get_Dashboard_KPIS:
             LOCAL_FILE_PATH = "daily_ingestion_df.csv"
             S3_FILE_PATH = "dashboard_files/daily_ingestion_df.csv"
             s3_client.upload_file(LOCAL_FILE_PATH, BUCKET_NAME, S3_FILE_PATH)
-            print("File uploaded successfully to S3!")
+            print("Files uploaded successfully to S3!")
         except FileNotFoundError:
             logger.error("File not found during S3 upload.")
             print("The file was not found.")
@@ -370,7 +387,7 @@ class Get_Dashboard_KPIS:
             logger.error("AWS Client Error during S3 upload: %s", e, exc_info=True)
             print(f"AWS Client Error: {e}")
 
-        
+
 if __name__ == "__main__": 
     Get_Dashboard_KPI_obj = Get_Dashboard_KPIS("a","b")
     client_id, username, client_secret = Get_Dashboard_KPI_obj.get_secret("studycast-integration-access-secret","us-east-1")
@@ -382,10 +399,10 @@ if __name__ == "__main__":
     df = Get_Dashboard_KPI_obj.get_All_data_data_stream(client_id, username, client_secret)
     dashboard_df = Get_Dashboard_KPI_obj.create_dashboard_KPI_csv(total_datastreams,total_datalakeobjects,active_calculated_insights,
                                  total_calculated_insights,total_unique_profiles,total_segments)
-
+    Get_Dashboard_KPI_obj.upload_data_streamcsv_s3bucket()
     total_ds,total_dlo,total_dmo,total_ci,active_ci,total_up,total_seg,total_conn = Get_Dashboard_KPI_obj.get_KPIs()                                                                              
     active_datastream,error_datastream,today_sum,daily_ingestion_df = Get_Dashboard_KPI_obj.get_informationfrom_datastream_csv()
     filtered_datastream_df = Get_Dashboard_KPI_obj.Get_category_datastream_dataframe()
     new_df = Get_Dashboard_KPI_obj.refreshmode_counts_datastream()
-    Get_Dashboard_KPI_obj.upload_csv_s3bucket()
+    Get_Dashboard_KPI_obj.upload_allcsv_s3bucket()
     print('Done')
