@@ -215,7 +215,7 @@ class Get_Dashboard_KPIS:
         dashboard_KPIs = {}
         dashboard_KPIs["Total DS"] = total_datastreams
         dashboard_KPIs["Total DLO"] = total_datalakeobjects
-        dashboard_KPIs["Total DMO"] = 1779
+        dashboard_KPIs["Total DMO"] = 1863
         dashboard_KPIs["Total CI"]= total_calculated_insights
         dashboard_KPIs["Active CI"]= active_calculated_insights
         dashboard_KPIs["Total UP"] = total_unique_profiles
@@ -224,10 +224,10 @@ class Get_Dashboard_KPIS:
         dashboard_df = pd.DataFrame([dashboard_KPIs])                       
         dashboard_df.to_csv('Dashboard.csv',index=False)
         return dashboard_df
-
+              
     #Get Dashboard KPIS___________________________________________________________    
     def get_KPIs(self):
-        #df = pd.read_csv('Dashboard.csv')
+        #df = pd.read_csv('Dashboard.csv') 
         s3 = boto3.client('s3')
         bucket_name = 'datacloud-heroku-appliation'
         file_key = 'dashboard_files/Dashboard.csv'
@@ -387,8 +387,8 @@ class Get_Dashboard_KPIS:
             logger.error("AWS Client Error during S3 upload: %s", e, exc_info=True)
             print(f"AWS Client Error: {e}")
 
-
-if __name__ == "__main__": 
+  
+if __name__ == "__main__":     
     Get_Dashboard_KPI_obj = Get_Dashboard_KPIS("a","b")
     client_id, username, client_secret = Get_Dashboard_KPI_obj.get_secret("studycast-integration-access-secret","us-east-1")
     total_datastreams= Get_Dashboard_KPI_obj.get_data_stream_counts(client_id, username, client_secret)

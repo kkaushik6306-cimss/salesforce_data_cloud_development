@@ -841,7 +841,7 @@ def execute_agent_tool(tool_name: str, tool_input: dict, client_id: str, client_
                 for f in data.get("fields", [])
             ]
             return json.dumps({
-                "name":       data.get("name"),
+                "name":       data.get("name"), 
                 "label":      data.get("label"),
                 "queryable":  data.get("queryable"),
                 "fields":     fields,
